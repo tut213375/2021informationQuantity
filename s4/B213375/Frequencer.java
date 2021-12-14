@@ -44,7 +44,9 @@ public class Frequencer implements FrequencerInterface {
         int spaceLength = mySpace.length;
         int count = 0;
 	if(debugMode) { showVariables(); }
-        for(int start = 0; start<spaceLength-targetLength; start++) { //referencing space[i] for i<(sLen-tLen)+tLen shouldn't core dump
+        for(int start = 0; start<spaceLength-targetLength; start++) { //referencing space[i] for i<(sLen-tLen)+tLen shouldn't core dump    
+            boolean abort = false;
+            for(int i = 0; i<targetLength; i++) {
                 if(myTarget[i] != mySpace[start+i]) { abort = true; break; }
             }
             if(abort == false) { count++; }
@@ -68,10 +70,6 @@ public class Frequencer implements FrequencerInterface {
         try {
             myObject = new Frequencer();
             myObject.setSpace("Hi Ho Hi Ho".getBytes());
-            for(byte b : "Hi Ho Hi Ho".getBytes()) System.out.print("{"+b+"}");
-            System.out.println();
-            for(byte b : "Hi Ho Hi Ho".getBytes("UTF-8")) System.out.print("{"+b+"}");
-            System.out.println();
             myObject.setTarget("H".getBytes());
             freq = myObject.frequency();
         }
@@ -79,13 +77,4 @@ public class Frequencer implements FrequencerInterface {
             System.out.println("Exception occurred: STOP");
         }
     }
-}
-
-
-
-class Main {
-  public static void main(String[] args) {
-    System.out.println("Hello world!");
-    Frequencer.main(args);
-  }
 }
