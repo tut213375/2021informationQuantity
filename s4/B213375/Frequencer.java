@@ -85,16 +85,13 @@ public class Frequencer implements FrequencerInterface{
 		suffix_j[num] = mySpace[j + num];
 	}
 
-	if(i > j) len = suffix_j.length; 
-	else len = suffix_i.length;
-
-	for(int num = 0; num < len; num++){
+	for(int num = 0; (num<suffix_i.length)&&(num<suffix_j.length); num++){
 		if(suffix_i[num] > suffix_j[num]) return 1;
 		else if (suffix_i[num] < suffix_j[num]) return -1; 
 	}
 
-        if(i > j) return 1;
-	else return -1; 
+        if(i > j) return -1;
+	else return 1; 
     }
 
     public void setSpace(byte []space) { 
