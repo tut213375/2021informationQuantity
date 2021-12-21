@@ -100,6 +100,19 @@ public class Frequencer implements FrequencerInterface{
         //   suffixArray[ 1]= 1:BA
         //   suffixArray[ 2]= 0:CBA
         // のようになるべきである。
+	
+        // count1s[substringIndex] = (counted1s)
+        int[] count1s = new int[mySpace.length];
+        for(int i = 0; i<mySpace.length; i++) count1s[i] = 0; //initialize with 0s
+        for(int i = 0; i<mySpace.length; i++){//forall substrings...
+            for(int j = 0; j<mySpace.length; j++)//... compare against all others:
+                if(suffixCompare(i, j)==1)
+                    count1s[i] += 1; //and count 1s
+        }
+        // suffixArray[(counted1s)] := substringIndex
+        for(int i = 0; i<mySpace.length; i++)
+            suffixArray[count1s[i]] = i;
+            //note for the future: make sure that count1s is exactly the set of integers 0,1,...,mySpace.length-1 for any input!!
     }
 
     // ここから始まり、指定する範囲までは変更してはならないコードである。
