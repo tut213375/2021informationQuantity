@@ -431,15 +431,55 @@ int count = 0; //suffixes that start with target.substr(s,e)
                 [10]= 4:o Hi Ho
             */
 
+            debug=true;
             //Test substring frequency counter: (space still "Hi Ho Hi Ho")
             frequencerObject.setTarget("H".getBytes());
-            //                                         
-            // ****  Please write code to check subByteStartIndex, and subByteEndIndex
-            //
+            System.out.println("TARGET:"+new String(frequencerObject.myTarget));
+            int result = frequencerObject.frequency();//How many distinct instances of tgt:"H" in spc:"Hi Ho Hi Ho"?
+            System.out.print("Freq = "+result+" ");
+            System.out.println( (result==4)? "OK" : "WRONG" );
+                //if(4 == result){System.out.println("OK");}else{System.out.println("WRONG");}
+            System.out.println();
 
-            int result = frequencerObject.frequency();
-            System.out.print("Freq = "+ result+" ");
-            if(4 == result) { System.out.println("OK"); } else {System.out.println("WRONG"); }
+        /*  SUBTEST 1:  target : "HoHoHo"
+                        start = 0, end = 2
+                        target_start_end : "Ho"
+                SA[3]=6:    Hi_Ho       #ignored...
+                SA[4]=0:    Hi_Ho_Hi_Ho #ignored...
+                target_s_e: Ho          # <-
+                SA[5]=9:    Ho          #STARTSWITH(Ho) (smallest i such that not precedes : 5)
+                SA[6]=3:    Ho_Hi_Ho    #STARTSWITH(Ho)
+                SA[7]=7:    i_Ho        #fail! (smallest i such that fail : 7)
+                SA[8]=1:    i_Ho_Hi_Ho  #fail!
+        */
+            frequencerObject.setTarget("HoHoHo".getBytes());
+            System.out.println("TARGET:"+new String(frequencerObject.myTarget));
+            System.out.println("TARGET.substr:"+new String(frequencerObject.myTarget).substring(0,2));
+            result = frequencerObject.subByteFrequency(0,2);
+            System.out.print("Freq.sub = "+result+" ");
+            System.out.println( (result==2)? "OK" : "WRONG" );
+            System.out.println();
+
+        /*  SUBTEST 2:  target : "High and Low"
+                        start = 1, end = 2
+                        target_start_end : "i"
+                SA[5]=9:    Ho          #ignored...
+                SA[6]=3:    Ho_Hi_Ho    #ignored...
+                target_s_e: i           # <-
+                SA[7]=7:    i_Ho        #STARTSWITH(i) (smallest i such that not precedes : 7)
+                SA[8]=1:    i_Ho_Hi_Ho  #STARTSWITH(i)
+                SA[9]=10:   o           #fail! (smallest i such that fail : 9)
+                SA[10]=4:   o_Hi_Ho     #fail!
+        */
+            frequencerObject.setTarget("High and Low".getBytes());
+            System.out.println("TARGET:"+new String(frequencerObject.myTarget));
+            System.out.println("TARGET.substr:"+new String(frequencerObject.myTarget).substring(1,2));
+            result = frequencerObject.subByteFrequency(1,2);
+            System.out.print("Freq.sub = "+result+" ");
+            System.out.println( (result==2)? "OK" : "WRONG" );
+            System.out.println();
+
+            debug=false;
         }
         catch(Exception e) {
             System.out.println("STOP");
