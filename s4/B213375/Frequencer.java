@@ -380,40 +380,58 @@ int count = 0; //suffixes that start with target.substr(s,e)
     public static void main(String[] args) {
         Frequencer frequencerObject;
         try { // テストに使うのに推奨するmySpaceの文字は、"ABC", "CBA", "HHH", "Hi Ho Hi Ho".
+            //Test: "ABC"
             frequencerObject = new Frequencer();
             frequencerObject.setSpace("ABC".getBytes());
-            System.out.println("Compare 0vs1: "+frequencerObject.suffixCompare(0,1));
-            System.out.println("Compare 1vs2: "+frequencerObject.suffixCompare(1,2));
-            System.out.println("Compare 2vs1: "+frequencerObject.suffixCompare(2,1));
-            System.out.println("Compare 2vs2: "+frequencerObject.suffixCompare(2,2));
+            System.out.println("SPACE:"+Arrays.toString(frequencerObject.mySpace));
             frequencerObject.printSuffixArray();
+            System.out.println("Compare [0]vs[1]: "+frequencerObject.suffixCompare(0,1)+
+                               "\t( expects -1 :: substr(0):ABC precedes(-1) substr(1):BC :: A<B )");
+            System.out.println("Compare [1]vs[2]: "+frequencerObject.suffixCompare(1,2));
+            System.out.println("Compare [2]vs[1]: "+frequencerObject.suffixCompare(2,1));
+            System.out.println("Compare [2]vs[2]: "+frequencerObject.suffixCompare(2,2));
+            System.out.println();
+
+            //Test: "CBA"
             frequencerObject = new Frequencer();
             frequencerObject.setSpace("CBA".getBytes());
-            System.out.println("Compare 0vs1: "+frequencerObject.suffixCompare(0,1));
-            System.out.println("Compare 1vs2: "+frequencerObject.suffixCompare(1,2));
-            System.out.println("Compare 2vs1: "+frequencerObject.suffixCompare(2,1));
-            System.out.println("Compare 2vs2: "+frequencerObject.suffixCompare(2,2));
+            System.out.println("SPACE:"+Arrays.toString(frequencerObject.mySpace));
             frequencerObject.printSuffixArray();
+            System.out.println("Compare [0]vs[1]: "+frequencerObject.suffixCompare(0,1)+
+                               "\t( expects  1 :: substr(0):CBA  follows(1)  substr(1):BA :: C>B )");
+            System.out.println("Compare [1]vs[2]: "+frequencerObject.suffixCompare(1,2));
+            System.out.println("Compare [2]vs[1]: "+frequencerObject.suffixCompare(2,1));
+            System.out.println("Compare [2]vs[2]: "+frequencerObject.suffixCompare(2,2));
+            System.out.println();
+
+            //Test: "HHH"
             frequencerObject = new Frequencer();
             frequencerObject.setSpace("HHH".getBytes());
+            System.out.println("SPACE:"+Arrays.toString(frequencerObject.mySpace));
             frequencerObject.printSuffixArray();
+            System.out.println();
+
+            //Test: "Hi Ho Hi Ho"
             frequencerObject = new Frequencer();
             frequencerObject.setSpace("Hi Ho Hi Ho".getBytes());
+            System.out.println("SPACE:"+Arrays.toString(frequencerObject.mySpace));
             frequencerObject.printSuffixArray();
-            /* Example from "Hi Ho Hi Ho"    
-               0: Hi Ho                      
-               1: Ho                         
-               2: Ho Hi Ho                   
-               3:Hi Ho                       
-               4:Hi Ho Hi Ho                 
-               5:Ho                          
-               6:Ho Hi Ho
-               7:i Ho                        
-               8:i Ho Hi Ho                  
-               9:o                           
-              10:o Hi Ho                     
+            System.out.println();
+            /* Example for "Hi Ho Hi Ho" (expected result): *note leading whitespaces
+                [ 0]= 5: Hi Ho      //first in order (index-0) is:  substring[5,end+1) "_Hi_Ho"
+                [ 1]= 8: Ho         //second in order (index-1) is: substring[8,end+1) "_Ho"
+                [ 2]= 2: Ho Hi Ho
+                [ 3]= 6:Hi Ho
+                [ 4]= 0:Hi Ho Hi Ho
+                [ 5]= 9:Ho
+                [ 6]= 3:Ho Hi Ho
+                [ 7]= 7:i Ho
+                [ 8]= 1:i Ho Hi Ho
+                [ 9]=10:o
+                [10]= 4:o Hi Ho
             */
 
+            //Test substring frequency counter: (space still "Hi Ho Hi Ho")
             frequencerObject.setTarget("H".getBytes());
             //                                         
             // ****  Please write code to check subByteStartIndex, and subByteEndIndex
