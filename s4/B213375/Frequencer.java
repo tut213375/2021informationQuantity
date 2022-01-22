@@ -28,6 +28,7 @@ public class Frequencer implements FrequencerInterface{
 
     int []  suffixArray; // Suffix Arrayの実装に使うデータの型をint []とせよ。
 
+    static boolean debug = false;
 
     // The variable, "suffixArray" is the sorted array of all suffixes of mySpace.                                    
     // Each suffix is expressed by a integer, which is the starting position in mySpace. 
@@ -239,10 +240,18 @@ public class Frequencer implements FrequencerInterface{
         // if target_start_end is "Ho", it will return 5.                           
         // Assuming the suffix array is created from "Hi Ho Hi Ho",                 
         // if target_start_end is "Ho ", it will return 6.                
-        //                                                                          
-        // ここにコードを記述せよ。                                                 
-        //                                                                         
-        return suffixArray.length; //このコードは変更しなければならない。          
+	
+        String space = new String(this.mySpace);
+        String target = new String(this.myTarget);
+        String target_start_end = target.substring(start,end);
+        for(int i=0;i<suffixArray.length;i++)
+            if(target_start_end.compareTo(space.substring(suffixArray[i]))<=0)
+                return i;/*smallest i such that target.substr DOES NOT PRECEDE SuffixArray[i]
+                    (but note that SA stores indirectly as: start_index of space.substr)*/
+        return suffixArray.length; /*This end-line is reached...
+            when target_start_end PRECEDES ALL entries (& particularly the last entry) in
+            SuffixArray (the dictionary of suffix substrings of SPACE), also implying that
+            there is no match.*/          
     }
 
     private int subByteEndIndex(int start, int end) {
@@ -271,10 +280,36 @@ public class Frequencer implements FrequencerInterface{
         // if target_start_end is "Ho", it will return 7 for "Hi Ho Hi Ho".  
         // Assuming the suffix array is created from "Hi Ho Hi Ho",          
         // if target_start_end is"i", it will return 9 for "Hi Ho Hi Ho".    
-        //                                                                   
-        //　ここにコードを記述せよ                                           
-        //                                                                   
-        return suffixArray.length; // この行は変更しなければならない、       
+	
+        int index_of_first_match_candidate = subByteStartIndex(start, end);
+        if(index_of_first_match_candidate==mySpace.length) return mySpace.length;//0 instances
+            //this line is not strictly required because the following for loop would be
+            //skipped and the code would return the equal end-line value.
+
+        String space = new String(this.mySpace);
+        String target = new String(this.myTarget);
+        String target_start_end = target.substring(start,end);
+        if(debug)System.out.println("--tse:"+target_start_end);
+int count = 0; //suffixes that start with target.substr(s,e)
+        for(int i=index_of_first_match_candidate; i<suffixArray.length; i++){
+        if(debug)System.out.println("--"+i+":"+space.substring(suffixArray[i])+".sW(tse)? "+space.substring(suffixArray[i]).startsWith(target_start_end));
+            if(space.substring(suffixArray[i]).startsWith(target_start_end)) count++;
+            else return i;/*smallest i such that SuffixArray[i] DOES NOT START WITH target_s_e
+                    but ignoring indices less than index_of_first_match_candidate
+                    (note that index_of_first_match_candidate might refer to a string that
+                    doesn't start with target_s_e, and it just comes later than target_s_e in
+                    ASCII-Lexicographic order)*/
+        }
+        return suffixArray.length;/*This end-line is reached...
+            when method never entered the 'for' loop since
+                subByteStartIndex(start,end) < suffixArray.length   == false
+                meaning count==0; or
+            when all entries in SuffixArray (the dictionary of suffix substrings of SPACE)
+                AFTER AND INCLUDING index = subByteStartIndex(start,end)
+                UP UNTIL BUT EXCLUDING index = suffixArray.length
+                (i.e. i for: first_match_index <= i < SPACE.length)
+                all STARTWITH(target_start_end)
+                meaning count==(SPACE.length - subByteStartIndex(...)) */
     }
 
 
