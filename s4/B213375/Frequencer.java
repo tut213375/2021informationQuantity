@@ -213,33 +213,46 @@ public class Frequencer implements FrequencerInterface{
     }
 
 
-    private int subByteStartIndex(int start, int end) {
-        //suffix arrayのなかで、目的の文字列の出現が始まる位置を求めるメソッド
-        // 以下のように定義せよ。
-        // The meaning of start and end is the same as subByteFrequency.
-        /* Example of suffix created from "Hi Ho Hi Ho"
-           0: Hi Ho
-           1: Ho
-           2: Ho Hi Ho
-           3:Hi Ho
-           4:Hi Ho Hi Ho
-           5:Ho
-           6:Ho Hi Ho
-           7:i Ho
-           8:i Ho Hi Ho
-           9:o
-          10:o Hi Ho
+    private int subByteStartIndex(int start, int end)/*works*/{
+        /*  SuffixArrayのなかで、目的の文字列の出現が始まる位置を求めるメソッド。
+            ""Returns the index of the first suffix which is
+            equal or greater than target_start_end.""
+            i.e. the smallest i such that strcmp(target.substr(s,e),space.substr(i))>=0
+            The meaning of start and end is the same as subByteFrequency.
+         */
+        //-----The following are examples assuming SPACE:"Hi Ho Hi Ho"
+        /* SuffixArray[i] for "Hi Ho Hi Ho": *note leading whitespaces
+            [ 0]= 5: Hi Ho
+            [ 1]= 8: Ho
+            [ 2]= 2: Ho Hi Ho
+            [ 3]= 6:Hi Ho
+            [ 4]= 0:Hi Ho Hi Ho
+            [ 5]= 9:Ho
+            [ 6]= 3:Ho Hi Ho
+            [ 7]= 7:i Ho
+            [ 8]= 1:i Ho Hi Ho
+            [ 9]=10:o
+            [10]= 4:o Hi Ho
         */
-
-        // It returns the index of the first suffix 
-        // which is equal or greater than target_start_end.                         
-	// Suppose target is set "Ho Ho Ho Ho"
-        // if start = 0, and end = 2, target_start_end is "Ho".
-        // if start = 0, and end = 3, target_start_end is "Ho ".
-        // Assuming the suffix array is created from "Hi Ho Hi Ho",                 
-        // if target_start_end is "Ho", it will return 5.                           
-        // Assuming the suffix array is created from "Hi Ho Hi Ho",                 
-        // if target_start_end is "Ho ", it will return 6.                
+        /*  EXAMPLE 1:  target : "Ho Ho Ho Ho"
+                        start = 0, end = 2
+                        target_start_end : "Ho"
+            returns 5
+            Because SuffixArray[5]:"Ho" is the FIRST entry (searching in sorted order)
+            from SuffixArray (the dictionary of suffixes) that MATCHES _OR_ FOLLOWS "Ho".
+            i.e. the smallest i such that strcmp(target.substr(s,e),space.substr(i))>=0
+        */
+        /*  EXAMPLE 2:  target : "Ho Ho Ho Ho"
+                        start = 0, end = 3
+                        target_start_end : "Ho_"
+            returns 6
+            Because SuffixArray[6]:"Ho_" is the FIRST entry (searching in sorted order)
+            from SuffixArray (the dictionary of suffixes) that MATCHES _OR_ FOLLOWS "Ho_".
+            i.e. the smallest i such that strcmp(target.substr(s,e),space.substr(i))>=0
+            Note that "Ho" DOES NOT MATCH "Ho_" because they are not exactly equal; and
+            also that "Ho" DOES NOT FOLLOW "Ho_" because the former is shorter and the
+            proper sorted BYTE-Lexicographic order is {...,Hn,...,Ho,Ho_,Ho__,...,Hoa,...}.
+        */
 	
         String space = new String(this.mySpace);
         String target = new String(this.myTarget);
@@ -254,32 +267,73 @@ public class Frequencer implements FrequencerInterface{
             there is no match.*/          
     }
 
-    private int subByteEndIndex(int start, int end) {
-        //suffix arrayのなかで、目的の文字列の出現しなくなる場所を求めるメソッド
-        // 以下のように定義せよ。
-        // The meaning of start and end is the same as subByteFrequency.
-        /* Example of suffix created from "Hi Ho Hi Ho"
-           0: Hi Ho                                    
-           1: Ho                                       
-           2: Ho Hi Ho                                 
-           3:Hi Ho                                     
-           4:Hi Ho Hi Ho                              
-           5:Ho                                      
-           6:Ho Hi Ho                                
-           7:i Ho                                    
-           8:i Ho Hi Ho                              
-           9:o                                       
-          10:o Hi Ho                                 
+    private int subByteEndIndex(int start, int end)/*works*/{
+        /*  SuffixArrayのなかで、目的の文字列の出現しなくなる場所を求めるメソッド。
+            ""Returns the index of the first suffix which is
+            greater than target_start_end; (and not equal to target_start_end).""
+            i.e. actually, returns the smallest i such that
+                suffix.startsWith(target_s_e) is false
+                but suffix does NOT precede target_s_e ASCII-Lexicographically
+            The meaning of start and end is the same as subByteFrequency.
+         */
+        //-----The following are examples assuming SPACE:"Hi Ho Hi Ho"
+        /* SuffixArray[i] for "Hi Ho Hi Ho": *note leading whitespaces
+            [ 0]= 5: Hi Ho
+            [ 1]= 8: Ho
+            [ 2]= 2: Ho Hi Ho
+            [ 3]= 6:Hi Ho
+            [ 4]= 0:Hi Ho Hi Ho
+            [ 5]= 9:Ho
+            [ 6]= 3:Ho Hi Ho
+            [ 7]= 7:i Ho
+            [ 8]= 1:i Ho Hi Ho
+            [ 9]=10:o
+            [10]= 4:o Hi Ho
         */
-        // It returns the index of the first suffix 
-        // which is greater than target_start_end; (and not equal to target_start_end)
-	// Suppose target is set "High_and_Low",
-        // if start = 0, and end = 2, target_start_end is "Hi".
-        // if start = 1, and end = 2, target_start_end is "i".
-        // Assuming the suffix array is created from "Hi Ho Hi Ho",                   
-        // if target_start_end is "Ho", it will return 7 for "Hi Ho Hi Ho".  
-        // Assuming the suffix array is created from "Hi Ho Hi Ho",          
-        // if target_start_end is"i", it will return 9 for "Hi Ho Hi Ho".    
+        /*  EXAMPLE 1:  target : "HoHoHo"
+                        start = 0, end = 2
+                        target_start_end : "Ho"
+            returns 7
+            Because SuffixArray[7]:"Ho" is the FIRST entry (searching in sorted order
+            AND IGNORING all entries before the first MATCH)
+            from SuffixArray (the dictionary of suffixes) that
+            DOESN'T MATCH _OR_ DOESN'T START WITH "Ho".
+            Refer to the following sorted list of strings in ASCII-Lexicographic order:
+                SA[3]=6:    Hi_Ho       #ignored...
+                SA[4]=0:    Hi_Ho_Hi_Ho #ignored...
+                target_s_e: Ho          # <-
+                SA[5]=9:    Ho          #STARTSWITH(Ho) (and also EXACTMATCH(Ho))
+                SA[6]=3:    Ho_Hi_Ho    #STARTSWITH(Ho)
+                SA[7]=7:    i_Ho        #fail! (smallest i such that fail : 7)
+                SA[8]=1:    i_Ho_Hi_Ho  #fail!
+        */
+        /*  EXAMPLE 2:  target : "High and Low"
+                        start = 1, end = 2
+                        target_start_end : "i"
+            returns
+            Because SuffixArray[]:"Ho" is the FIRST entry (searching in sorted order
+            AND IGNORING all entries before the first MATCH)
+            from SuffixArray (the dictionary of suffixes) that
+            DOESN'T MATCH _OR_ DOESN'T START WITH "Ho".
+            Refer to the following sorted list of strings in ASCII-Lexicographic order:
+                SA[3]=6:    Hi_Ho       #ignored...
+                SA[4]=0:    Hi_Ho_Hi_Ho #ignored...
+                SA[5]=9:    Ho          #ignored...
+                SA[6]=3:    Ho_Hi_Ho    #ignored...
+                target_s_e: i           # <-
+                SA[7]=7:    i_Ho        #STARTSWITH(i)
+                SA[8]=1:    i_Ho_Hi_Ho  #STARTSWITH(i)
+                SA[9]=10:   o           #fail! (smallest i such that fail : 9)
+                SA[10]=4:   o_Hi_Ho     #fail!
+        */
+        /*
+        * Note with insight that the relevance of this analysis (as can be seen through
+        * the examples) is that the number of cases where
+        *   the suffix from SA[x] STARTSWITH(target.substr(start,end))
+        *   (including, if it exists, the EXACTMATCH case of SA[x]==target.substr(start,end))
+        * is a count of the distinct instances of the substring TARGET.substr(start,end) in
+        * the main string SPACE.
+        * */
 	
         int index_of_first_match_candidate = subByteStartIndex(start, end);
         if(index_of_first_match_candidate==mySpace.length) return mySpace.length;//0 instances
