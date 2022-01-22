@@ -19,8 +19,6 @@ import s4.specification.*;
   }
 */
 
-
-
 public class Frequencer implements FrequencerInterface{
     // Code to start with: This code is not working, but good start point to work.
     byte [] myTarget;
@@ -255,7 +253,7 @@ public class Frequencer implements FrequencerInterface{
             also that "Ho" DOES NOT FOLLOW "Ho_" because the former is shorter and the
             proper sorted BYTE-Lexicographic order is {...,Hn,...,Ho,Ho_,Ho__,...,Hoa,...}.
         */
-	
+
         String space = new String(this.mySpace);
         String target = new String(this.myTarget);
         String target_start_end = target.substring(start,end);
@@ -266,7 +264,7 @@ public class Frequencer implements FrequencerInterface{
         return suffixArray.length; /*This end-line is reached...
             when target_start_end PRECEDES ALL entries (& particularly the last entry) in
             SuffixArray (the dictionary of suffix substrings of SPACE), also implying that
-            there is no match.*/          
+            there is no match.*/
     }
 
     private int subByteEndIndex(int start, int end)/*works*/{
@@ -336,7 +334,7 @@ public class Frequencer implements FrequencerInterface{
         * is a count of the distinct instances of the substring TARGET.substr(start,end) in
         * the main string SPACE.
         * */
-	
+
         int index_of_first_match_candidate = subByteStartIndex(start, end);
         if(index_of_first_match_candidate==mySpace.length) return mySpace.length;//0 instances
             //this line is not strictly required because the following for loop would be
