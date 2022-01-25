@@ -45,7 +45,35 @@ public class TestCase {
 	    freq = myObject.frequency();
 	    assert freq == 4: "Hi Ho Hi Ho, H: " + freq;
 
+		myObject = new Frequencer();
+	    myObject.setSpace("Hi Ho Hi Ho".getBytes());
+	    myObject.setTarget("Hi".getBytes());
+	    freq = myObject.frequency();
+	    assert freq == 2: "Hi Ho Hi Ho, Hi: " + freq;
+
+		myObject = new Frequencer();
+	    myObject.setSpace("Hi Ho Hi Ho".getBytes());
+	    myObject.setTarget("Ho ".getBytes());
+	    freq = myObject.frequency();
+	    assert freq == 1: "Hi Ho Hi Ho, Ho : " + freq;
+
+		myObject = new Frequencer();
+	    myObject.setSpace("Hi Ho Hi Ho".getBytes());
+	    myObject.setTarget("Hi Ho ".getBytes());
+	    freq = myObject.frequency();
+	    assert freq == 1: "Hi Ho Hi Ho, Hi Ho : " + freq;
+
 	    // Write your testCase here
+		myObject.setSpace("Hi Ho Hi Ho".getBytes());
+	    myObject.setTarget(" ".getBytes());
+	    freq = myObject.frequency();
+	    assert freq == 3: "Hi Ho Hi Ho,  : " + freq;
+
+		myObject.setSpace("Hi Ho Hi Ho".getBytes());
+	    myObject.setTarget("".getBytes());
+	    freq = myObject.frequency();
+	    assert freq == 11: "Hi Ho Hi Ho, : " + freq;
+
 	    myObject.setSpace("H".getBytes()); // 検索文字列が検索対象文字列より長い場合
 	    myObject.setTarget("HH".getBytes());
 	    freq = myObject.frequency();

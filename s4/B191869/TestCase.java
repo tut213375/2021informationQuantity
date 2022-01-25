@@ -44,8 +44,43 @@ public class TestCase {
 	    myObject.setTarget("H".getBytes());
 	    freq = myObject.frequency();
 	    assert freq == 4: "Hi Ho Hi Ho, H: " + freq;
+
 	    // Write your testCase here
 
+		// Test case 1: space = ''; target = 'a'
+		myObject = new Frequencer();
+		myObject.setSpace("".getBytes());
+		myObject.setTarget("a".getBytes());
+		freq = myObject.frequency();
+		assert freq == 0 : "Space is not set, a: "+ freq;
+
+		// Test case 2: space = 'null'; target = 'abc'
+		myObject = new Frequencer();
+		myObject.setSpace(null);
+		myObject.setTarget("abc".getBytes());
+		freq = myObject.frequency();
+		assert freq == 0 : "Target is null,  abc : "+ freq;
+
+		// Test case 3: space = 'ababab'; target = 'abab'
+		myObject = new Frequencer();
+		myObject.setSpace("ababab".getBytes());
+		myObject.setTarget("abab".getBytes());
+		freq = myObject.frequency();
+		assert freq == 2 : "ababab, abab: "+ freq;
+
+		// Test case 4: space = 'abcdabcd'; target = ''    
+		myObject = new Frequencer();
+		myObject.setSpace("abcdabcd".getBytes());
+		myObject.setTarget("".getBytes());
+		freq = myObject.frequency();
+		assert freq == -1 : "abcdabcd, TARGET IS NOT SET : "+ freq;
+
+		// Test case 5: space = 'abcdabcd'; target = 'null'
+		myObject = new Frequencer();
+		myObject.setSpace("abcdabcd".getBytes());
+		myObject.setTarget(null);
+		freq = myObject.frequency();
+		assert freq == -1 : "abcdabcd, null : "+ freq;   
 
 	}
 	catch(Exception e) {

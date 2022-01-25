@@ -41,10 +41,17 @@ public class TestCase {
 	    // This is smoke test
 	    myObject = new Frequencer();
 	    myObject.setSpace("Hi Ho Hi Ho".getBytes());
+	    myObject.setTarget("H".getBytes());
+	    freq = myObject.frequency();
+	    assert freq == 4: "Hi Ho Hi Ho, H: " + freq;
+	    // Write your testCase here
+        /*
+        myObject = new Frequencer();
+	    myObject.setSpace("Hi Ho Hi Ho".getBytes());
 	    myObject.setTarget("Hoooooooooooooooooo".getBytes());
 	    freq = myObject.frequency();
 	    assert freq == 0: "Hi Ho Hi Ho, Hoooooooooooooooooo: " + freq;
-	    // Write your testCase here
+        */
 
 
 	}

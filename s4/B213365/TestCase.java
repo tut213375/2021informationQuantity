@@ -37,6 +37,7 @@ public class TestCase {
 	    FrequencerInterface  myObject;
 	    int freq;
 	    System.out.println("checking Frequencer");
+		System.out.println("foo");
 
 	    // This is smoke test
 	    myObject = new Frequencer();
