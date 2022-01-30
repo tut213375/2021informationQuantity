@@ -1,5 +1,6 @@
 package s4.B213375;
 import java.lang.*;
+import java.util.Arrays;
 import s4.specification.*;
 
 /* Used content imported from s4.specification:
@@ -75,16 +76,9 @@ public class InformationEstimator implements InformationEstimatorInterface{
         if(debugMode)showVariables();
         if(debugMode)System.out.printf("np=%d length=%d\n", np, +myTarget.length);
 
-        // subestimations[start,end] := IQ(myTarget.substring(start,end) in mySpace)
+        // subestimations[start,end] := IQ(myTarget.substring(start,end) in mySpace), computed as needed and cached
         double[][] subestimations = new double[myTarget.length+1][myTarget.length+1];
-        for(int start=0; start+1<myTarget.length+1; start++)
-            for(int end=start; end<myTarget.length+1; end++){
-                subestimations[start][end]=
-                        (start==end)? Double.MAX_VALUE :
-                                this.iq(myFrequencer.subByteFrequency(start, end));
-                if(debugMode)System.out.print("{"+new String(myTarget)+"["+start+"~"+end+")iq="+subestimations[start][end]+"}");
-            }
-        if(debugMode) System.out.println();
+        for(double[] arr:subestimations) Arrays.fill(arr, -1); // init as -1 to signify "not yet calculated"
 
         for(int p=0; p<np; p++){
             // boolean array canonical form of the p-th partition permutation
@@ -108,8 +102,13 @@ public class InformationEstimator implements InformationEstimatorInterface{
                     if(debugMode)System.out.write(myTarget[end]);
                     end++;
                 }
-                if(debugMode)System.out.print("["+start+"~"+end+") ");
-                myFrequencer.setTarget(subBytes(myTarget, start, end));
+//                myFrequencer.setTarget(subBytes(myTarget, start, end));
+                if(debugMode)System.out.print("["+start+"~"+end+")");
+                if(subestimations[start][end]==-1){
+                    subestimations[start][end]=this.iq(myFrequencer.subByteFrequency(start, end));
+                    if(debugMode)System.out.print("{="+subestimations[start][end]+"}");
+                }
+                if(debugMode)System.out.print(' ');
                 value1 += subestimations[start][end];//iq(myFrequencer.frequency()); was old default implementation without caches.
                 if(!fullCalculations && value1>=output) break; // early stop, already more than current min
                 start=end;
