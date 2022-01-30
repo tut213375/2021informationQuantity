@@ -17,6 +17,7 @@ public interface InformationEstimatorInterface{
 
 public class InformationEstimator implements InformationEstimatorInterface{
     static boolean debugMode = false;
+    static boolean fullCalculations = false; //prevents skipping of some unnecessary calculations
     // Code to test, *warning: This code is slow, and it lacks the required test
     byte[] myTarget; // data to compute its information quantity
     byte[] mySpace;  // Sample space to compute the probability
@@ -110,9 +111,12 @@ public class InformationEstimator implements InformationEstimatorInterface{
                 if(debugMode)System.out.print("["+start+"~"+end+") ");
                 myFrequencer.setTarget(subBytes(myTarget, start, end));
                 value1 += subestimations[start][end];//iq(myFrequencer.frequency()); was old default implementation without caches.
+                if(!fullCalculations && value1>=output) break; // early stop, already more than current min
                 start=end;
             }
-            if(debugMode)System.out.println("\tval_"+p+" := "+ value1);
+            if(debugMode)
+                if(start==myTarget.length) System.out.println("\tval_"+p+" := "+ value1);
+                else System.out.println("\tval_"+p+" >= minCandidate"); // early stop, already more than current min
 
             // retain the minimal value
             if(value1<output) output=value1;
@@ -124,6 +128,7 @@ public class InformationEstimator implements InformationEstimatorInterface{
     public static void main(String[] args){
         InformationEstimator myObject;
         InformationEstimator.debugMode = true;
+        InformationEstimator.fullCalculations = false;
         myObject=new InformationEstimator();
         myObject.setSpace("3210321001230123".getBytes());
 
