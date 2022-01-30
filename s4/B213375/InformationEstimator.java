@@ -2,7 +2,7 @@ package s4.B213375;
 import java.lang.*;
 import s4.specification.*;
 
-/* What is imported from s4.specification
+/* Used content imported from s4.specification:
 package s4.specification;
 public interface InformationEstimatorInterface{
     void setTarget(byte target[]);  // set the data for computing the information quantities
@@ -68,7 +68,7 @@ public class InformationEstimator implements InformationEstimatorInterface{
                 }
             }, considering all the possible permutations to subdivide Space.*/
         double output = Double.MAX_VALUE; // init @ worst case, then reduce if possible
-        boolean[] partition = new boolean[myTarget.length+1];
+        boolean[] partition = new boolean[myTarget.length+1]; // binary uniquely maps a unique p-th permutation
         int np = 1<<(myTarget.length-1); // number of ways to partition myTarget : 2^(n-1)
 
         if(debugMode)showVariables();
@@ -82,7 +82,7 @@ public class InformationEstimator implements InformationEstimatorInterface{
             */
             partition[0] = true;
             for(int i=0; i<myTarget.length-1; i++)
-                partition[i+1] = (0!=((1<<i)&p)); //use binary to easily map all permutations
+                partition[i+1] = (0!=((1<<i)&p));  // binary uniquely maps a unique p-th permutation
             partition[myTarget.length] = true;
 
             // compute Information Quantity for this partition candidate as "value1"
