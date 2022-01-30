@@ -52,6 +52,21 @@ public class InformationEstimator implements InformationEstimatorInterface{
 
     @Override
     public double estimation(){//estimation of IQ
+        // 0.0 : when no Target;
+        // Double.MAX_VALUE : when space not set (technically infinite)
+        // WARN: Undefined behaviour if true value is finite but larger than Double.MAX_VALUE.
+        if(myTarget.length==0) return 0;
+        if(mySpace.length==0) return Double.MAX_VALUE;
+
+        /*  This implementation breaks down the problem into multiple calculations,
+            out of which the minimum value out of the candidates is the true result.
+            The candidates are each a {
+                summation of {
+                    the Information Quantity of every substring from {
+                        a partition of the original Space
+                    } with the same original Target
+                }
+            }, considering all the possible permutations to subdivide Space.*/
         double output = Double.MAX_VALUE; // init @ worst case, then reduce if possible
         boolean[] partition = new boolean[myTarget.length+1];
         int np = 1<<(myTarget.length-1); // number of ways to partition myTarget : 2^(n-1)
