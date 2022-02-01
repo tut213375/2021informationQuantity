@@ -76,6 +76,46 @@ public class InformationEstimator implements InformationEstimatorInterface{
         if(debugMode)showVariables();
         if(debugMode)System.out.printf("np=%d length=%d\n", np, +myTarget.length);
 
+        //vvvvv HERE NEW vvvvv //Dynamic Programming attempt; I think it works; can be further optimized
+        int t_len = this.myTarget.length;
+        double[] DP2 = new double[t_len+1]; //suffixEstimation
+        //DP2[t_len]=0.0;//by default
+        for(int i=t_len -1; i>=0; i--){
+            //Find DP2[i] as min of the following candidates:
+            double[] candidates = new double[t_len-i];
+            for(int j=0; j<candidates.length; j++){
+                double selfref = DP2[i+(j+1)];
+                double iq_reducedtarget = iq(myFrequencer.subByteFrequency(i,i+(j+1)));
+                candidates[j] = selfref + iq_reducedtarget;
+                if(debugMode)System.out.printf(
+                        "----DP["+i+"] candidate "+j+": "+
+                        "DP["+(i+(j+1))+"] + IQ(\""+new String(myTarget).substring(i,i+(j+1))+"\")"+
+                        " \t= %.1f + %.1f\n",selfref,iq_reducedtarget);
+            }/* POSSIBLE OPTIMIZATION POINT: if the loops for all the j's are done simultaneously,
+            then we can use information used to compute
+                iq(TARGET.substring(i, i+[[j=0]]+1))
+            and use it to reduce the computations required to find next loop's
+                iq(TARGET.substring(i, i+[[j=1]]+1))
+            and similarly we can use info from case[[j=1]] in finding case[[j=2]], and so on and so forth.
+            Namely, in finding the InformationQuantity of TARGET.substring(s,e), we need to
+            find the frequency (count of instances) of TARGET.substring(s,e) within SPACE,
+            but then, when finding TARGET.substring(s,e+1), we ONLY NEED TO
+            find the frequency (count of instances) of TARGET.charAt(e) immediately after TARGET.substring(s,e).
+            This follows from the simple idea that, for example, freq("HAM")>=freq("HAMBURGER"),
+            because "HAMBURGER" can only appear on places that already start with "HAM".
+            And this provides a recursive avenue to reduce the cost of finding a String by
+            downgrading the problem to individual characters because
+                freq('H') >= f("HA") >= f("HAM") >= f("HAMBURGER") ; and
+                instancesOf('H') ⊇ iO("HA") ⊇ iO("HAM") ⊇ iO("HAMBURGER")
+            */
+            double min = Double.MAX_VALUE;
+            for(int index=0; index<candidates.length; index++)if(candidates[index]<min) min=candidates[index];
+            DP2[i]=min;
+            if(debugMode)System.out.printf("DP["+i+"] := %.1f\n",DP2[i]);
+        }
+        if(true) return DP2[0];
+        //^^^^^ HERE NEW ^^^^^
+
         // subestimations[start,end] := IQ(myTarget.substring(start,end) in mySpace), computed as needed and cached
         double[][] subestimations = new double[myTarget.length+1][myTarget.length+1];
         for(double[] arr:subestimations) Arrays.fill(arr, -1); // init as -1 to signify "not yet calculated"
