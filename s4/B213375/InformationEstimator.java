@@ -27,7 +27,7 @@ public class InformationEstimator implements InformationEstimatorInterface{
     private void showVariables(){
         System.out.print("spc:");
         for(int i=0; i<mySpace.length; i++) System.out.write(mySpace[i]);
-        System.out.write(' ');
+        System.out.write((mySpace.length>15)? '\n' : ' ');
 
         System.out.print("tgt:");
         for(int i=0; i<myTarget.length; i++) System.out.write(myTarget[i]);
@@ -129,6 +129,8 @@ public class InformationEstimator implements InformationEstimatorInterface{
         InformationEstimator.debugMode = true;
         InformationEstimator.fullCalculations = false;
         myObject=new InformationEstimator();
+
+        //////////////////////////////////////////////////
         myObject.setSpace("3210321001230123".getBytes());
 
         myObject.setTarget("0".getBytes());
@@ -150,5 +152,103 @@ public class InformationEstimator implements InformationEstimatorInterface{
         if(!debugMode) myObject.showVariables();
         System.out.printf("%10.5f", myObject.estimation());
         System.out.printf(" (expected %10.5f)\n\n", 4.0);
+
+        //////////////////////////////////////////////////
+        String bin32 =
+                "0101010101"+
+                "1000000001"+
+                "0101111101"+
+                "11";
+        /*
+            "100" : 1 time  : but!! IQ = 2.66 != 5 = -log2(1/32)    //I think
+            "001" : 1 time  : but!! IQ = 2.50 != 5 = -log2(1/32)    //I think
+            "010" : 8 times : 2 = -log2(1/4) = -log2(8/32)
+         */
+        myObject.setSpace(bin32.getBytes());
+        myObject.setTarget("100".getBytes());
+        if(!debugMode) myObject.showVariables();
+        System.out.printf("%10.5f", myObject.estimation());
+        System.out.printf(" (expected %10.5f)\n\n", 3.0);
+
+        myObject.setTarget("001".getBytes());
+        if(!debugMode) myObject.showVariables();
+        System.out.printf("%10.5f", myObject.estimation());
+        System.out.printf(" (expected %10.5f)\n\n", 1-Math.log10(9.0/32)/Math.log10(2));
+
+        myObject.setTarget("101".getBytes());
+        if(!debugMode) myObject.showVariables();
+        System.out.printf("%10.5f", myObject.estimation());
+        System.out.printf(" (expected %10.5f)\n\n", -Math.log10(7.0/32)/Math.log10(2));
+
+        //////////////////////////////////////////////////
+        String lorem_256 =
+                "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut "+
+                "labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris "+
+                "nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in";
+        /*
+            "or"  : 7 times : -log2(7/256) = 5.19
+            "dol" : 3 times : -log2(3/256) = 6.415
+            " do" : 4 times : -log2(4/256) = -log2(1/64) = 6.0
+        */
+        myObject.setSpace(lorem_256.getBytes());
+        myObject.setTarget("or".getBytes());
+        if(!debugMode) myObject.showVariables();
+        System.out.printf("%10.5f", myObject.estimation());
+        System.out.printf(" (expected %10.5f)\n\n", -Math.log10(7.0/256)/Math.log10(2));
+
+        myObject.setTarget("dol".getBytes());
+        if(!debugMode) myObject.showVariables();
+        System.out.printf("%10.5f", myObject.estimation());
+        System.out.printf(" (expected %10.5f)\n\n", -Math.log10(3.0/256)/Math.log10(2));
+
+        myObject.setTarget(" do".getBytes());
+        if(!debugMode) myObject.showVariables();
+        System.out.printf("%10.5f", myObject.estimation());
+        System.out.printf(" (expected %10.5f)\n\n", 6.0);
+
+        //////////////////////////////////////////////////
+        String lorem_2048 =
+                "LOREM IPSUM DOLOR SIT AMET, CONSECTETUR ADIPISCING ELIT. QUAE EST QUAERENDI AC DISSERENDI, QUAE " +
+                "LOGIKH DICITUR, ISTE VESTER PLANE, UT MIHI QUIDEM VIDETUR, INERMIS AC NUDUS EST. UTRUM IGITUR TIBI " +
+                "LITTERAM VIDEOR AN TOTAS PAGINAS COMMOVERE? QUAE EST QUAERENDI AC DISSERENDI, QUAE LOGIKH DICITUR, " +
+                "ISTE VESTER PLANE, UT MIHI QUIDEM VIDETUR, INERMIS AC NUDUS EST. QUOCUMQUE ENIM MODO SUMMUM BONUM " +
+                "SIC EXPONITUR, UT ID VACET HONESTATE, NEC OFFICIA NEC VIRTUTES IN EA RATIONE NEC AMICITIAE CONSTARE " +
+                "POSSUNT. IN PRIMO ENIM ORTU INEST TENERITAS AC MOLLITIA QUAEDAM, UT NEC RES VIDERE OPTIMAS NEC " +
+                "AGERE POSSINT. DUO REGES: CONSTRUCTIO INTERRETE. SEMPER ENIM ITA ADSUMIT ALIQUID, UT EA, QUAE PRIMA " +
+                "DEDERIT, NON DESERAT. TRIA GENERA BONORUM; QUI POTEST IGITUR HABITARE IN BEATA VITA SUMMI MALI " +
+                "METUS? SED ISTI IPSI, QUI VOLUPTATE ET DOLORE OMNIA METIUNTUR, NONNE CLAMANT SAPIENTI PLUS SEMPER " +
+                "ADESSE QUOD VELIT QUAM QUOD NOLIT? TERRAM, MIHI CREDE, EA LANX ET MARIA DEPRIMET. EORUM ENIM EST " +
+                "HAEC QUERELA, QUI SIBI CARI SUNT SESEQUE DILIGUNT. QUAE IN CONTROVERSIAM VENIUNT, DE IIS, SI PLACET" +
+                ", DISSERAMUS. ATQUE HOC LOCO SIMILITUDINES EAS, QUIBUS ILLI UTI SOLENT, DISSIMILLIMAS PROFEREBAS. " +
+                "SEPTEM AUTEM ILLI NON SUO, SED POPULORUM SUFFRAGIO OMNIUM NOMINATI SUNT. NEGABAT IGITUR ULLAM ESSE " +
+                "ARTEM, QUAE IPSA A SE PROFICISCERETUR; HIC, QUI UTRUMQUE PROBAT, AMBOBUS DEBUIT UTI, SICUT FACIT RE" +
+                ", NEQUE TAMEN DIVIDIT VERBIS. VIDEMUS IN QUODAM VOLUCRIUM GENERE NON NULLA INDICIA PIETATIS, " +
+                "COGNITIONEM, MEMORIAM, IN MULTIS ETIAM DESIDERIA VIDEMUS. SIN EA NON NEGLEGEMUS NEQUE TAMEN AD " +
+                "FINEM SUMMI BONI REFEREMUS, NON MULTUM AB ERILLI LEVITATE ABERRABIMUS. CUM SCIRET CONFESTIM ESSE " +
+                "MORIENDUM EAMQUE MORTEM ARDENTIORE STUDIO PETERET, QUAM EPICURUS VOLUPTATEM PETENDAM PUTAT. FACILE " +
+                "PATEREMUR, QUI ETIAM NUNC AGENDI ALIQUID DISCENDIQUE CAUSA PROPE CONTRA NATURAM VIGILLAS SUSCIPERE " +
+                "SOLEAMUS. NUNC RELIQUA VIDEAMUS, NISI AUT AD HAEC, CATO, DICERE ALIQUID VIS AUT NOS IAM LONGIORES " +
+                "SUMUS. NEMO IGITUR ESSE BEATUS POTEST. NUNC RELIQUA VIDEAMUS, NISI AUT AD HAEC, CATO, ALIQUIDA.";
+        /*
+            "UM"   : 19 times : -log2(19/2048) = 6.415
+            "ERE"  : 16 times : -log2(16/2048) = -log2(1/128) = 7.0
+            "EMUS" :  4 times : -log2( 4/2048) = -log2(1/512) = 9.0
+        */
+        myObject.setSpace(lorem_2048.getBytes());
+        myObject.setTarget("UM".getBytes());
+        if(!debugMode) myObject.showVariables();
+        System.out.printf("%10.5f", myObject.estimation());
+        System.out.printf(" (expected %10.5f)\n\n", -Math.log10(19.0/2048)/Math.log10(2));
+
+        myObject.setTarget("ERE".getBytes());
+        if(!debugMode) myObject.showVariables();
+        System.out.printf("%10.5f", myObject.estimation());
+        System.out.printf(" (expected %10.5f)\n\n", 7.0);
+
+        myObject.setTarget("EMUS".getBytes());
+        if(!debugMode) myObject.showVariables();
+        System.out.printf("%10.5f", myObject.estimation());
+        System.out.printf(" (expected %10.5f)\n\n", 9.0);
+
     }
 }
