@@ -57,8 +57,8 @@ public class InformationEstimator implements InformationEstimatorInterface{
         // 0.0 : when no Target;
         // Double.MAX_VALUE : when space not set (technically infinite)
         // WARN: Undefined behaviour if true value is finite but larger than Double.MAX_VALUE.
-        if(myTarget.length==0) return 0;
-        if(mySpace.length==0) return Double.MAX_VALUE;
+        if(mySpace==null||mySpace.length==0) return Double.MAX_VALUE;
+        if(myTarget==null||myTarget.length==0) return 0;
 
         /*  This implementation breaks down the problem into multiple calculations,
             out of which the minimum value out of the candidates is the true result.
