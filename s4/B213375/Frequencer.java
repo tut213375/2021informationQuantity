@@ -1,9 +1,8 @@
 package s4.B213375; // s4.studentID
+
 import java.lang.*;
 import java.util.Arrays;
-
 import s4.specification.*;
-
 
 /*package s4.specification;
   ここは、１回、２回と変更のない外部仕様である。
@@ -20,134 +19,82 @@ import s4.specification.*;
 */
 
 public class Frequencer implements FrequencerInterface{
-    // Code to start with: This code is not working, but good start point to work.
-    byte [] myTarget;
-    byte [] mySpace;
-    boolean targetReady = false;
-    boolean spaceReady = false;
+    byte[] myTarget;
+    byte[] mySpace;
+    boolean targetReady=false;
+    boolean spaceReady=false;
 
-    int []  suffixArray; // Suffix Arrayの実装に使うデータの型をint []とせよ。
+    int[] suffixArray;
 
-    static boolean debug = false;
+    static boolean debug=false;
+    static boolean shortcut=false;
 
-    // The variable, "suffixArray" is the sorted array of all suffixes of mySpace.                                    
-    // Each suffix is expressed by a integer, which is the starting position in mySpace. 
-                            
-    // The following is the code to print the contents of suffixArray.
-    // This code could be used on debugging.                                                                
-
-    // この関数は、デバッグに使ってもよい。mainから実行するときにも使ってよい。
-    // リポジトリにpushするときには、mainメッソド以外からは呼ばれないようにせよ。
-    //
-    private void printSuffixArray() {
-        if(spaceReady) {
-            for(int i=0; i< mySpace.length; i++) {
-                int s = suffixArray[i];
+    private void printSuffixArray(){
+        if(spaceReady){
+            for(int i=0; i<mySpace.length; i++){
+                int s=suffixArray[i];
                 System.out.printf("suffixArray[%2d]=%2d:", i, s);
-                for(int j=s;j<mySpace.length;j++) {
+                for(int j=s; j<mySpace.length; j++){
                     System.out.write(mySpace[j]);
                 }
                 System.out.write('\n');
             }
         }
     }
-
-    private int suffixCompare(int i, int j) {
-        // suffixCompareはソートのための比較メソッドである。
-        // 次のように定義せよ。
-        //
-        // comparing two suffixes by dictionary order.
-        // suffix_i is a string starting with the position i in "byte [] mySpace".
-        // When mySpace is "ABCD", suffix_0 is "ABCD", suffix_1 is "BCD", 
-        // suffix_2 is "CD", and sufffix_3 is "D".
-        // Each i and j denote suffix_i, and suffix_j.                            
-        // Example of dictionary order                                            
-        // "i"      <  "o"        : compare by code                              
-        // "Hi"     <  "Ho"       ; if head is same, compare the next element    
-        // "Ho"     <  "Ho "      ; if the prefix is identical, longer string is big  
-        //  
-        //The return value of "int suffixCompare" is as follows. 
-        // if suffix_i > suffix_j, it returns 1   
-        // if suffix_i < suffix_j, it returns -1  
-        // if suffix_i = suffix_j, it returns 0;   
-
-        // ここにコードを記述せよ 
-	if(i == j) return 0; 
-
-	int len;
-	byte[] suffix_i = new byte[mySpace.length - i];
-	byte[] suffix_j = new byte[mySpace.length - j];
-
-	for(int num = 0; num < mySpace.length - i; num++){
-		suffix_i[num] = mySpace[i + num];
-	}
-
-	for(int num = 0; num < mySpace.length - j; num++){
-		suffix_j[num] = mySpace[j + num];
-	}
-
-	for(int num = 0; (num<suffix_i.length)&&(num<suffix_j.length); num++){
-		if(suffix_i[num] > suffix_j[num]) return 1;
-		else if (suffix_i[num] < suffix_j[num]) return -1; 
-	}
-
-        if(i > j) return -1;
-	else return 1; 
+    private int suffixCompare(int i/*<len*/, int j/*<len*/)/*fastOGJ*/{
+        /*Compares SPACE.substring(i) with SPACE.substring(j) BYTE-lexicographically
+        * (compares as words on a dictionary, where the precedence of each character is
+        * defined by its codepoint (ASCII) value; and lower codepoints precede higher ones)
+        * returns
+        * -1 : in order : substring(i) < ... < substring(j)
+        *  0 : exact match
+        *  1 : reversed : substring(i) > ... > substring(j)
+        * */
+        int chcmp = mySpace[i]-mySpace[j];//character_compare (like strcmp)
+        if(chcmp!=0) return Integer.signum(chcmp);//trivial case type1/*!*/
+        if(i==j) return 0; //trivial case type2/*!*/
+        //non-trivial case; long compare:
+        int comparableIndices = mySpace.length - Integer.max(i,j);
+        for(int n=1; n<comparableIndices/*((n<suff_i.len)&&(n<suff_j.len))*/; n++){
+            chcmp = mySpace[i+n]-mySpace[j+n];//character_compare (like strcmp)
+            if(chcmp!=0) return Integer.signum(chcmp);
+        }//...all comparable indices match
+        return (i>j)/*suff_i.len<suff_j.len*/? -1 : 1 ;
     }
-
-    public void setSpace(byte []space) { 
-        // suffixArrayの前処理は、setSpaceで定義せよ。
-        mySpace = space; if(mySpace.length>0) spaceReady = true;
-        // First, create unsorted suffix array.
-        suffixArray = new int[space.length];
-        // put all suffixes in suffixArray.
-        for(int i = 0; i< space.length; i++) {
-            suffixArray[i] = i; // Please note that each suffix is expressed by one integer.      
-        }
-        //                                            
-        // ここに、int suffixArrayをソートするコードを書け。
-        // もし、mySpace が"ABC"ならば、
-        // suffixArray = { 0, 1, 2} となること求められる。
-        // このとき、printSuffixArrayを実行すると
-        //   suffixArray[ 0]= 0:ABC
-        //   suffixArray[ 1]= 1:BC
-        //   suffixArray[ 2]= 2:C
-        // のようになるべきである。
-        // もし、mySpace が"CBA"ならば
-        // suffixArray = { 2, 1, 0} となることが求めらる。
-        // このとき、printSuffixArrayを実行すると
-        //   suffixArray[ 0]= 2:A
-        //   suffixArray[ 1]= 1:BA
-        //   suffixArray[ 2]= 0:CBA
-        // のようになるべきである。
-	
-        // count1s[substringIndex] = (counted1s)
-        int[] count1s = new int[mySpace.length];
-        for(int i = 0; i<mySpace.length; i++) count1s[i] = 0; //initialize with 0s
-        for(int i = 0; i<mySpace.length; i++){//forall substrings...
-            for(int j = 0; j<mySpace.length; j++)//... compare against all others:
+    public void setSpace(byte[] space)/*prolly faster ways to sort here*//*OGJ*/{
+        this.mySpace = space; if(mySpace.length>0) this.spaceReady = true;
+        this.suffixArray = new int[space.length]; //init (unsorted)
+        /*  e.g.    for SPACE "ABC"
+            suffixArray[0] ((0th in dictionary order)) = start@ 0 (ABC)
+            suffixArray[1] ((1st                    )) =      @ 1 (BC)
+            suffixArray[2] ((2nd                    )) =      @ 2 (C)
+         *  e.g.    for SPACE "ZYYX"
+            suffixArray[0] ((0th in dictionary order)) = start@ 3 (X)
+            suffixArray[1] ((1st                    )) =      @ 2 (YX)
+            suffixArray[2] ((2nd                    )) =      @ 1 (YYX)
+            suffixArray[3] ((3rd                    )) =      @ 0 (ZYYX)
+        */
+        // count1s[substringIndex] := (counted1s)
+        int[] count1s = new int[mySpace.length]; //init (all 0s by default)
+        for(int i=0; i<mySpace.length; i++){//for all substrings...
+            for(int j=0; j<mySpace.length; j++)//...compare against all others:...
                 if(suffixCompare(i, j)==1)
-                    count1s[i] += 1; //and count 1s
+                    count1s[i]+=1; //...and count 1s
         }
         // suffixArray[(counted1s)] := substringIndex
-        for(int i = 0; i<mySpace.length; i++)
-            suffixArray[count1s[i]] = i;
-            //note for the future: make sure that count1s is exactly the set of integers 0,1,...,mySpace.length-1 for any input!!
+        for(int i=0; i<mySpace.length; i++) suffixArray[count1s[i]]=i;
     }
 
     // ここから始まり、指定する範囲までは変更してはならないコードである。
-
-    public void setTarget(byte [] target) {
-        myTarget = target; if(myTarget.length>0) targetReady = true;
+    public void setTarget(byte[] target){
+        myTarget=target; if(myTarget.length>0) targetReady=true;
     }
-
-    public int frequency() {
-        if(targetReady == false) return -1;
-        if(spaceReady == false) return 0;
+    public int frequency(){
+        if(targetReady==false) return -1;
+        if(spaceReady==false) return 0;
         return subByteFrequency(0, myTarget.length);
     }
-
-    public int subByteFrequency(int start, int end) {
+    public int subByteFrequency(int start, int end){
         // start, and end specify a string to search in myTarget,
         // if myTarget is "ABCD", 
         //     start=0, and end=1 means string "A".
@@ -167,29 +114,33 @@ public class Frequencer implements FrequencerInterface{
         */
         // The following the counting method using suffix array.
         // 演習の内容は、適切なsubByteStartIndexとsubByteEndIndexを定義することである。
-        int first = subByteStartIndex(start, end);
-        int last1 = subByteEndIndex(start, end);
-        return last1 - first;
+        int first=subByteStartIndex(start, end);
+        int last1=subByteEndIndex(start, end);
+        return last1-first;
     }
     // 変更してはいけないコードはここまで。
 
-    private int targetCompare(int i, int j, int k) {
-        // subByteStartIndexとsubByteEndIndexを定義するときに使う比較関数。
-        // 次のように定義せよ。
-        // suffix_i is a string starting with the position i in "byte [] mySpace".
-        // When mySpace is "ABCD", suffix_0 is "ABCD", suffix_1 is "BCD", 
-        // suffix_2 is "CD", and sufffix_3 is "D".
-        // target_j_k is a string in myTarget start at j-th postion ending k-th position.
-        // if myTarget is "ABCD", 
-        //     j=0, and k=1 means that target_j_k is "A".
-        //     j=1, and k=3 means that target_j_k is "BC".
-        // This method compares suffix_i and target_j_k.
-        // if the beginning of suffix_i matches target_j_k, it return 0.
-        // if suffix_i > target_j_k it return 1; 
-        // if suffix_i < target_j_k it return -1;
+    private int targetCompare(int i, int j, int k)/*OGJ? testable notTested*//*1 caveat assumption*/{
+        /*  suffix_i = SPACE.substring(i)
+                i.e. the substring of SPACE starting at index i
+                e.g. SPACE "Hamburger" | i=3 -> "burger"
+            target_j_k = TARGET.substring(j,k)
+                i.e. the substring of TARGET starting at index j (inclusive) & ending at k (exclusive)
+                e.g. TARGET "urge" | j,k=2,4 -> "ge"
+        */
+        /*Compares SPACE.substring(i) with TARGET.substring(j,k) BYTE-lexicographically
+         * (compares as words on a dictionary, where the precedence of each character is
+         * defined by its codepoint (ASCII) value; and lower codepoints precede higher ones)
+         * BUT if (suffix_i).beginsWith(TARGET_jk) returns 0.
+         * returns
+         * -1 : in order : suffix_i < ... < TARGET_jk
+         *  0 : suffix_i.beginsWith(TARGET_jk)        including case: (suffix_i)==(TARGET_jk)
+         *  1 : reversed : suffix_i > ... > TARGET_jk   BUT ONLY IF !(suffix_i).beginsWith(TARGET_jk)
+         * */
         // if first part of suffix_i is equal to target_j_k, it returns 0;
-        //
-        // Example of search 
+        // if suffix_i > target_j_k it return 1;
+        // if suffix_i < target_j_k it return -1;
+        // Example of search
         // suffix          target
         // "o"       >     "i"
         // "o"       <     "z"
@@ -206,22 +157,48 @@ public class Frequencer implements FrequencerInterface{
         //            targetCompare should return 0;
         //    if suffix_i is "Ho Hi Ho", and suffix_j is "Ho", 
         //            suffixCompare should return -1.
-        //
-        // ここに比較のコードを書け 
-        //
-        return 0; // この行は変更しなければならない。
+        int suffix_len=mySpace.length-i;
+        int target_len=k-j;
+        int comparableIndices=Integer.min(suffix_len, target_len);
+        for(int n=0; n<comparableIndices; n++){
+            int chcmp=mySpace[i+n]-myTarget[j+n];//strcmp(SPACE[i], TARGET[j])={match:0 inorder:NEG reversed:POS}
+            if(chcmp<0) return /*Integer.signum(chcmp)*/-1; /*(code correct??)
+            if in-order is {SUFFIX, TARGET}
+                then "SUFFIX cannot begin with TARGET" && "SUFFIX precedes TARGET"
+                so return [negative]*/
+            if(chcmp>0) return /*Integer.signum(chcmp*/1; /*(code correct??)
+                if in-order is {TARGET, SUFFIX}  &&  not all comparable indices are identical (==we are still inside this for-loop)
+                then either
+                    (1) "TARGET doesn't match anything in the start of suffix" && "SUFFIX succeeds TARGET" so return [positive]
+                    or
+                    (2) "the start of TARGET matched the start of SUFFIX, but then it stopped matching" && "SUFFIX succeeds TARGET" so return [positive]
+                so return [positive]*/
+            if(chcmp==0) continue;
+        }
+        //reaching here means: SPACE[i~end].startsWith(TARGET[j~k]) ||OR|| TARGET[j~k].startsWith(SPACE[i~end])  ||OR||  (i==s_len)
+        if(target_len>suffix_len) return -1;//longTARGET cannot be startingSubstring of shortSUFFIX (not return 0); and shortSTRING precedes longSTRING in order (so return -1)
+        else return 0; //shortTARGET is exactly same as head of longSUFFIX; 0 by definition
+
+        //I'm assuming that the case "should return -1" while also "comparable indices = 0" doesn't exist
+        //... but I'm not sure if that is mathematically correct
+    }
+    private int targetCompareRanked(int rank, int j, int k)/*OGJ*//*trivial*/{
+        /* suffix_i = SPACE.substring(suffixArray[rank])
+            i.e. the substring of SPACE starting at index i=suffixArray[rank]
+            NOTE: in a BYTE-Lexicographical ordered list of all suffixes of SPACE, suffix_i is the n-th. */
+        return targetCompare(suffixArray[rank],j,k);
     }
 
-
-    private int subByteStartIndex(int start, int end)/*works*/{
+    private int subByteStartIndex(int start, int end)/*non-shortcut works*/
+    /*can be improved by searching for the index in a non-linear way*/{
         /*  SuffixArrayのなかで、目的の文字列の出現が始まる位置を求めるメソッド。
             ""Returns the index of the first suffix which is
             equal or greater than target_start_end.""
-            i.e. the smallest i such that strcmp(target.substr(s,e),space.substr(i))>=0
-            The meaning of start and end is the same as subByteFrequency.
-         */
+            i.e. the smallest rank r such that strcmp(suffix_i, target.substr(s,e))>=0
+                where suffix_i = SPACE.substr(i=suffixArray[r]); the r-th suffix in BYTE-Lexicographic order
+        */
         //-----The following are examples assuming SPACE:"Hi Ho Hi Ho"
-        /* SuffixArray[i] for "Hi Ho Hi Ho": *note leading whitespaces
+        /* SuffixArray[r] for "Hi Ho Hi Ho": *note leading whitespaces
             [ 0]= 5: Hi Ho
             [ 1]= 8: Ho
             [ 2]= 2: Ho Hi Ho
@@ -240,7 +217,7 @@ public class Frequencer implements FrequencerInterface{
             returns 5
             Because SuffixArray[5]:"Ho" is the FIRST entry (searching in sorted order)
             from SuffixArray (the dictionary of suffixes) that MATCHES _OR_ FOLLOWS "Ho".
-            i.e. the smallest i such that strcmp(target.substr(s,e),space.substr(i))>=0
+            i.e. the smallest r such that strcmp(target.substr(s,e),space.substr(suffixArray[r]))>=0
         */
         /*  EXAMPLE 2:  target : "Ho Ho Ho Ho"
                         start = 0, end = 3
@@ -248,36 +225,46 @@ public class Frequencer implements FrequencerInterface{
             returns 6
             Because SuffixArray[6]:"Ho_" is the FIRST entry (searching in sorted order)
             from SuffixArray (the dictionary of suffixes) that MATCHES _OR_ FOLLOWS "Ho_".
-            i.e. the smallest i such that strcmp(target.substr(s,e),space.substr(i))>=0
+            i.e. the smallest r such that strcmp(target.substr(s,e),space.substr(suffixArray[r]))>=0
             Note that "Ho" DOES NOT MATCH "Ho_" because they are not exactly equal; and
             also that "Ho" DOES NOT FOLLOW "Ho_" because the former is shorter and the
             proper sorted BYTE-Lexicographic order is {...,Hn,...,Ho,Ho_,Ho__,...,Hoa,...}.
         */
+        if(shortcut){//no strings instanced ; linear search
+            for(int r=0; r<suffixArray.length; r++)
+                if(targetCompareRanked(r,start,end)>=0) return r; //how heavy is the overhead of targetCompare?? can this be improved??
+            return suffixArray.length;
+        }
 
-        String space = new String(this.mySpace);
-        String target = new String(this.myTarget);
-        String target_start_end = target.substring(start,end);
-        for(int i=0;i<suffixArray.length;i++)
-            if(target_start_end.compareTo(space.substring(suffixArray[i]))<=0)
-                return i;/*smallest i such that target.substr DOES NOT PRECEDE SuffixArray[i]
+        String space=new String(this.mySpace);
+        String target=new String(this.myTarget);
+        String target_start_end=target.substring(start, end);
+if(debug)System.out.print("<<<");
+        for(int r=0; r<suffixArray.length; r++){
+            int cmp=space.substring(suffixArray[r]).compareTo(target_start_end);
+if(debug)System.out.print("{"+space.substring(suffixArray[r])+"~"+target.substring(start, end)+"}?"  +  "="+cmp+",");
+            if(cmp>=0){
+if(debug)System.out.println("...ret r_min="+r+"(i"+suffixArray[r]+")>>>");
+                return r;/*smallest i such that target.substr DOES NOT PRECEDE SuffixArray[i]
                     (but note that SA stores indirectly as: start_index of space.substr)*/
+            }
+        }
+if(debug)System.out.println("...compared all; ret r_min= len= "+suffixArray.length+"(no valid i)>>>");
         return suffixArray.length; /*This end-line is reached...
             when target_start_end PRECEDES ALL entries (& particularly the last entry) in
             SuffixArray (the dictionary of suffix substrings of SPACE), also implying that
             there is no match.*/
     }
 
-    private int subByteEndIndex(int start, int end)/*works*/{
+    private int subByteEndIndex(int start, int end)/*non-shortcut works*/{
         /*  SuffixArrayのなかで、目的の文字列の出現しなくなる場所を求めるメソッド。
             ""Returns the index of the first suffix which is
             greater than target_start_end; (and not equal to target_start_end).""
-            i.e. actually, returns the smallest i such that
-                suffix.startsWith(target_s_e) is false
-                but suffix does NOT precede target_s_e ASCII-Lexicographically
-            The meaning of start and end is the same as subByteFrequency.
+            i.e. the smallest rank r such that strcmp(suffix_i, target.substr(s,e))>0
+                where suffix_i = SPACE.substr(i=suffixArray[r]); the r-th suffix in BYTE-Lexicographic order
          */
         //-----The following are examples assuming SPACE:"Hi Ho Hi Ho"
-        /* SuffixArray[i] for "Hi Ho Hi Ho": *note leading whitespaces
+        /* SuffixArray[r] for "Hi Ho Hi Ho": *note leading whitespaces
             [ 0]= 5: Hi Ho
             [ 1]= 8: Ho
             [ 2]= 2: Ho Hi Ho
@@ -294,8 +281,7 @@ public class Frequencer implements FrequencerInterface{
                         start = 0, end = 2
                         target_start_end : "Ho"
             returns 7
-            Because SuffixArray[7]:"Ho" is the FIRST entry (searching in sorted order
-            AND IGNORING all entries before the first MATCH)
+            Because SuffixArray[7]:"Ho" is the FIRST entry (searching in sorted order)
             from SuffixArray (the dictionary of suffixes) that
             DOESN'T MATCH _OR_ DOESN'T START WITH "Ho".
             Refer to the following sorted list of strings in ASCII-Lexicographic order:
@@ -304,15 +290,14 @@ public class Frequencer implements FrequencerInterface{
                 target_s_e: Ho          # <-
                 SA[5]=9:    Ho          #STARTSWITH(Ho) (and also EXACTMATCH(Ho))
                 SA[6]=3:    Ho_Hi_Ho    #STARTSWITH(Ho)
-                SA[7]=7:    i_Ho        #fail! (smallest i such that fail : 7)
+                SA[7]=7:    i_Ho        #fail! (smallest r such that fail : 7)
                 SA[8]=1:    i_Ho_Hi_Ho  #fail!
         */
         /*  EXAMPLE 2:  target : "High and Low"
                         start = 1, end = 2
                         target_start_end : "i"
-            returns
-            Because SuffixArray[]:"Ho" is the FIRST entry (searching in sorted order
-            AND IGNORING all entries before the first MATCH)
+            returns 9
+            Because SuffixArray[9]:"Ho" is the FIRST entry (searching in sorted order)
             from SuffixArray (the dictionary of suffixes) that
             DOESN'T MATCH _OR_ DOESN'T START WITH "Ho".
             Refer to the following sorted list of strings in ASCII-Lexicographic order:
@@ -323,37 +308,53 @@ public class Frequencer implements FrequencerInterface{
                 target_s_e: i           # <-
                 SA[7]=7:    i_Ho        #STARTSWITH(i)
                 SA[8]=1:    i_Ho_Hi_Ho  #STARTSWITH(i)
-                SA[9]=10:   o           #fail! (smallest i such that fail : 9)
+                SA[9]=10:   o           #fail! (smallest r such that fail : 9)
                 SA[10]=4:   o_Hi_Ho     #fail!
         */
         /*
-        * Note with insight that the relevance of this analysis (as can be seen through
-        * the examples) is that the number of cases where
-        *   the suffix from SA[x] STARTSWITH(target.substr(start,end))
-        *   (including, if it exists, the EXACTMATCH case of SA[x]==target.substr(start,end))
-        * is a count of the distinct instances of the substring TARGET.substr(start,end) in
-        * the main string SPACE.
-        * */
+         * Note with insight that the relevance of this analysis (as can be seen through
+         * the examples) is that the number of cases where
+         *   the suffix from SA[x] STARTSWITH(target.substr(start,end))
+         *   (including, if it exists, the EXACTMATCH case of SA[x]==target.substr(start,end))
+         * is a count of the distinct instances of the substring TARGET.substr(start,end) in
+         * the main string SPACE.
+         * */
+        if(shortcut){//no strings instanced ; linear search
+            for(int r=0; r<suffixArray.length; r++)
+                if(targetCompareRanked(r,start,end)>0) return r; //how heavy is the overhead of targetCompare?? can this be improved??
+                //by spec definition of targetCompare, >0 <=> "SUFFIX doesn't begin with TARGET_s_e"&&"inReversedOrder{SUFFIX,TARGET_s_e}"
+            return suffixArray.length;
+        }/*!*//*for subByteStartIndex, it's probably a good idea to search non-linearly, with something more clever like a binary search;
+        but for subByteEndIndex it's probably (in general) better to search linearly starting with the index returned by subByteStartIndex
+        because (in general) there are probably not many SUFFIXes that start with TARGET_s_e
+                                          (i.e. not many (r,start,end) such that targetCompare(r,s,e) returns 0)
+                                          (i.e. not many copies of TARGET_s_e inside of SPACE)
+        so then (in general) subByteEndIndex shouldn't be far after subByteStartIndex*//*but maybe divide and conquer and search
+        linearly and binary at the same time (one step each per loop in a shared loop) and see which finishes first??*/
 
-        int index_of_first_match_candidate = subByteStartIndex(start, end);
-        if(index_of_first_match_candidate==mySpace.length) return mySpace.length;//0 instances
-            //this line is not strictly required because the following for loop would be
-            //skipped and the code would return the equal end-line value.
-
-        String space = new String(this.mySpace);
-        String target = new String(this.myTarget);
-        String target_start_end = target.substring(start,end);
-        if(debug)System.out.println("--tse:"+target_start_end);
-int count = 0; //suffixes that start with target.substr(s,e)
-        for(int i=index_of_first_match_candidate; i<suffixArray.length; i++){
-        if(debug)System.out.println("--"+i+":"+space.substring(suffixArray[i])+".sW(tse)? "+space.substring(suffixArray[i]).startsWith(target_start_end));
-            if(space.substring(suffixArray[i]).startsWith(target_start_end)) count++;
-            else return i;/*smallest i such that SuffixArray[i] DOES NOT START WITH target_s_e
-                    but ignoring indices less than index_of_first_match_candidate
-                    (note that index_of_first_match_candidate might refer to a string that
+        String space=new String(this.mySpace);
+        String target=new String(this.myTarget);
+        String target_start_end=target.substring(start, end);
+if(debug)System.out.println("///--tse:"+target_start_end);
+        int count=0; //suffixes that start with target.substr(s,e)
+        int rank_of_first_match_candidate=subByteStartIndex(start,end);
+        for(int r=rank_of_first_match_candidate; r<suffixArray.length; r++){
+if(debug)System.out.print("--["+r+"]:"+space.substring(suffixArray[r])+".sW(tse)?\t\t"+space.substring(suffixArray[r]).startsWith(target_start_end)+":"+targetCompareRanked(r, start, end));
+            if(space.substring(suffixArray[r]).startsWith(target_start_end)){
+                count++;
+if(debug)System.out.print(" c="+count);
+            }
+            else{
+if(debug)System.out.println("...ret r_max="+r+"(i"+suffixArray[r]+")\\\\\\");
+                return r;/*smallest r such that SuffixArray[r] DOES NOT START WITH target_s_e
+                    but ignoring indices less than rank_of_first_match_candidate
+                    (note that rank_of_first_match_candidate might refer to a string that
                     doesn't start with target_s_e, and it just comes later than target_s_e in
                     ASCII-Lexicographic order)*/
+            }
+if(debug)System.out.println();
         }
+if(debug)System.out.println("ended forloop, all latter ranks start with tse ... ret r_max= len="+suffixArray.length+"(no valid i)\\\\\\");
         return suffixArray.length;/*This end-line is reached...
             when method never entered the 'for' loop since
                 subByteStartIndex(start,end) < suffixArray.length   == false
@@ -377,46 +378,62 @@ int count = 0; //suffixes that start with target.substr(s,e)
     // 外部からFrequencerを使うときにメッセージを出力してはならない。
     // 教員のテスト実行のときにメッセージがでると、仕様にない動作をするとみなし、
     // 減点の対象である。
-    public static void main(String[] args) {
-        Frequencer frequencerObject;
-        try { // テストに使うのに推奨するmySpaceの文字は、"ABC", "CBA", "HHH", "Hi Ho Hi Ho".
+    public static void main(String[] args){
+        Frequencer f;//frequencerObject;
+        try{ // テストに使うのに推奨するmySpaceの文字は、"ABC", "CBA", "HHH", "Hi Ho Hi Ho".
             //Test: "ABC"
-            frequencerObject = new Frequencer();
-            frequencerObject.setSpace("ABC".getBytes());
-            System.out.println("SPACE:"+Arrays.toString(frequencerObject.mySpace));
-            frequencerObject.printSuffixArray();
-            System.out.println("Compare [0]vs[1]: "+frequencerObject.suffixCompare(0,1)+
-                               "\t( expects -1 :: substr(0):ABC precedes(-1) substr(1):BC :: A<B )");
-            System.out.println("Compare [1]vs[2]: "+frequencerObject.suffixCompare(1,2));
-            System.out.println("Compare [2]vs[1]: "+frequencerObject.suffixCompare(2,1));
-            System.out.println("Compare [2]vs[2]: "+frequencerObject.suffixCompare(2,2));
-            System.out.println();
-
+            {
+                f=new Frequencer();
+                f.setSpace("ABC".getBytes());
+                System.out.println("SPACE:"+Arrays.toString(f.mySpace));
+                f.printSuffixArray();
+                System.out.println("Compare [0]vs[1]: "+f.suffixCompare(0, 1)+
+                        "\t( expects -1 :: substr(0):ABC precedes(-1) substr(1):BC :: A<B )");
+                System.out.println("Compare [1]vs[2]: "+f.suffixCompare(1, 2));
+                System.out.println("Compare [2]vs[1]: "+f.suffixCompare(2, 1));
+                System.out.println("Compare [2]vs[2]: "+f.suffixCompare(2, 2));
+                System.out.println();
+            }
             //Test: "CBA"
-            frequencerObject = new Frequencer();
-            frequencerObject.setSpace("CBA".getBytes());
-            System.out.println("SPACE:"+Arrays.toString(frequencerObject.mySpace));
-            frequencerObject.printSuffixArray();
-            System.out.println("Compare [0]vs[1]: "+frequencerObject.suffixCompare(0,1)+
-                               "\t( expects  1 :: substr(0):CBA  follows(1)  substr(1):BA :: C>B )");
-            System.out.println("Compare [1]vs[2]: "+frequencerObject.suffixCompare(1,2));
-            System.out.println("Compare [2]vs[1]: "+frequencerObject.suffixCompare(2,1));
-            System.out.println("Compare [2]vs[2]: "+frequencerObject.suffixCompare(2,2));
-            System.out.println();
-
+            {
+                f=new Frequencer();
+                f.setSpace("CBA".getBytes());
+                System.out.println("SPACE:"+Arrays.toString(f.mySpace));
+                f.printSuffixArray();
+                System.out.println("Compare [0]vs[1]: "+f.suffixCompare(0, 1)+
+                        "\t( expects  1 :: substr(0):CBA  follows(1)  substr(1):BA :: C>B )");
+                System.out.println("Compare [1]vs[2]: "+f.suffixCompare(1, 2));
+                System.out.println("Compare [2]vs[1]: "+f.suffixCompare(2, 1));
+                System.out.println("Compare [2]vs[2]: "+f.suffixCompare(2, 2));
+                System.out.println();
+            }
+            //Test: "EDCAB"
+            {
+                f=new Frequencer();
+                f.setSpace("EDCAB".getBytes());
+                System.out.println("SPACE:"+Arrays.toString(f.mySpace));
+                f.setTarget("CA".getBytes());
+                f.printSuffixArray();
+                int r=2;
+                System.out.println(new String(f.mySpace).substring(f.suffixArray[r])+".beginsWith("+")?    true=0 else=strcmp()");
+                System.out.println("ret1:"+f.targetCompare(f.suffixArray[r], 0, f.myTarget.length));
+                System.out.println("ret2:"+f.targetCompareRanked(r, 0, f.myTarget.length));
+                System.out.println();
+            }
             //Test: "HHH"
-            frequencerObject = new Frequencer();
-            frequencerObject.setSpace("HHH".getBytes());
-            System.out.println("SPACE:"+Arrays.toString(frequencerObject.mySpace));
-            frequencerObject.printSuffixArray();
-            System.out.println();
-
-            //Test: "Hi Ho Hi Ho"
-            frequencerObject = new Frequencer();
-            frequencerObject.setSpace("Hi Ho Hi Ho".getBytes());
-            System.out.println("SPACE:"+Arrays.toString(frequencerObject.mySpace));
-            frequencerObject.printSuffixArray();
-            System.out.println();
+            {
+                f=new Frequencer();
+                f.setSpace("HHH".getBytes());
+                System.out.println("SPACE:"+Arrays.toString(f.mySpace));
+                f.printSuffixArray();
+                System.out.println();
+            }
+            //MultiTest: "Hi Ho Hi Ho"
+            {
+                f=new Frequencer();
+                f.setSpace("Hi Ho Hi Ho".getBytes());
+                System.out.println("SPACE:"+Arrays.toString(f.mySpace));
+                f.printSuffixArray();
             /* Example for "Hi Ho Hi Ho" (expected result): *note leading whitespaces
                 [ 0]= 5: Hi Ho      //first in order (index-0) is:  substring[5,end+1) "_Hi_Ho"
                 [ 1]= 8: Ho         //second in order (index-1) is: substring[8,end+1) "_Ho"
@@ -430,59 +447,178 @@ int count = 0; //suffixes that start with target.substr(s,e)
                 [ 9]=10:o
                 [10]= 4:o Hi Ho
             */
+                System.out.println();
 
-            debug=true;
-            //Test substring frequency counter: (space still "Hi Ho Hi Ho")
-            frequencerObject.setTarget("H".getBytes());
-            System.out.println("TARGET:"+new String(frequencerObject.myTarget));
-            int result = frequencerObject.frequency();//How many distinct instances of tgt:"H" in spc:"Hi Ho Hi Ho"?
-            System.out.print("Freq = "+result+" ");
-            System.out.println( (result==4)? "OK" : "WRONG" );
-                //if(4 == result){System.out.println("OK");}else{System.out.println("WRONG");}
-            System.out.println();
+                //Test substring frequency counter: (space still "Hi Ho Hi Ho")
+            /*  SUBTEST 1:  target : "H"
+                    SA[1]=8:    _Ho         #ignored...
+                    SA[2]=2:    _Ho Hi Ho   #ignored...
+                    target_s_e: H           # <-
+                    SA[3]=6:    Hi_Ho       #STARTSWITH(H) (smallest r such that not precedes : 3)
+                    SA[4]=0:    Hi_Ho_Hi_Ho #STARTSWITH(H)
+                    SA[5]=9:    Ho          #STARTSWITH(H)
+                    SA[6]=3:    Ho_Hi_Ho    #STARTSWITH(H)
+                    SA[7]=7:    i_Ho        #fail! (smallest r such that fail : 7)
+                    SA[8]=1:    i_Ho_Hi_Ho  #fail!
+            */
+                f.setTarget("H".getBytes());
+                System.out.println("TARGET:"+new String(f.myTarget));
+boolean debug_before_override=debug;
+debug=true;System.out.println("DEBUG_OVERRIDE_ON");
+                int result=f.frequency();//How many distinct instances of tgt:"H" in spc:"Hi Ho Hi Ho"?
+debug=debug_before_override;System.out.println("DEBUG_OVERRIDE_CEDED");
+                System.out.print("Freq = "+result+" ");
+                System.out.println((result==4)? "OK" : "WRONG");
+                System.out.println();
 
-        /*  SUBTEST 1:  target : "HoHoHo"
-                        start = 0, end = 2
-                        target_start_end : "Ho"
-                SA[3]=6:    Hi_Ho       #ignored...
-                SA[4]=0:    Hi_Ho_Hi_Ho #ignored...
-                target_s_e: Ho          # <-
-                SA[5]=9:    Ho          #STARTSWITH(Ho) (smallest i such that not precedes : 5)
-                SA[6]=3:    Ho_Hi_Ho    #STARTSWITH(Ho)
-                SA[7]=7:    i_Ho        #fail! (smallest i such that fail : 7)
-                SA[8]=1:    i_Ho_Hi_Ho  #fail!
-        */
-            frequencerObject.setTarget("HoHoHo".getBytes());
-            System.out.println("TARGET:"+new String(frequencerObject.myTarget));
-            System.out.println("TARGET.substr:"+new String(frequencerObject.myTarget).substring(0,2));
-            result = frequencerObject.subByteFrequency(0,2);
-            System.out.print("Freq.sub = "+result+" ");
-            System.out.println( (result==2)? "OK" : "WRONG" );
-            System.out.println();
+            /*  SUBTEST 2:  target : "HoHoHo"
+                            start = 0, end = 2
+                            target_start_end : "Ho"
+                    SA[3]=6:    Hi_Ho       #ignored...
+                    SA[4]=0:    Hi_Ho_Hi_Ho #ignored...
+                    target_s_e: Ho          # <-
+                    SA[5]=9:    Ho          #STARTSWITH(Ho) (smallest i such that not precedes : 5)
+                    SA[6]=3:    Ho_Hi_Ho    #STARTSWITH(Ho)
+                    SA[7]=7:    i_Ho        #fail! (smallest i such that fail : 7)
+                    SA[8]=1:    i_Ho_Hi_Ho  #fail!
+            */
+                f.setTarget("HoHoHo".getBytes());
+                System.out.println("TARGET:"+new String(f.myTarget));
+                System.out.println("TARGET.substr:"+new String(f.myTarget).substring(0, 2));
+                result=f.subByteFrequency(0, 2);
+                System.out.print("Freq.sub = "+result+" ");
+                System.out.println((result==2)? "OK" : "WRONG");
+                System.out.println();
 
-        /*  SUBTEST 2:  target : "High and Low"
-                        start = 1, end = 2
-                        target_start_end : "i"
-                SA[5]=9:    Ho          #ignored...
-                SA[6]=3:    Ho_Hi_Ho    #ignored...
-                target_s_e: i           # <-
-                SA[7]=7:    i_Ho        #STARTSWITH(i) (smallest i such that not precedes : 7)
-                SA[8]=1:    i_Ho_Hi_Ho  #STARTSWITH(i)
-                SA[9]=10:   o           #fail! (smallest i such that fail : 9)
-                SA[10]=4:   o_Hi_Ho     #fail!
-        */
-            frequencerObject.setTarget("High and Low".getBytes());
-            System.out.println("TARGET:"+new String(frequencerObject.myTarget));
-            System.out.println("TARGET.substr:"+new String(frequencerObject.myTarget).substring(1,2));
-            result = frequencerObject.subByteFrequency(1,2);
-            System.out.print("Freq.sub = "+result+" ");
-            System.out.println( (result==2)? "OK" : "WRONG" );
-            System.out.println();
+            /*  SUBTEST 2:  target : "High and Low"
+                            start = 1, end = 2
+                            target_start_end : "i"
+                    SA[5]=9:    Ho          #ignored...
+                    SA[6]=3:    Ho_Hi_Ho    #ignored...
+                    target_s_e: i           # <-
+                    SA[7]=7:    i_Ho        #STARTSWITH(i) (smallest i such that not precedes : 7)
+                    SA[8]=1:    i_Ho_Hi_Ho  #STARTSWITH(i)
+                    SA[9]=10:   o           #fail! (smallest i such that fail : 9)
+                    SA[10]=4:   o_Hi_Ho     #fail!
+            */
+                f.setTarget("High and Low".getBytes());
+                System.out.println("TARGET:"+new String(f.myTarget));
+                System.out.println("TARGET.substr:"+new String(f.myTarget).substring(1, 2));
+                result=f.subByteFrequency(1, 2);
+                System.out.print("Freq.sub = "+result+" ");
+                System.out.println((result==2)? "OK" : "WRONG");
+                System.out.println();
+            }
 
-            debug=false;
-        }
-        catch(Exception e) {
+            //Future tests for efficiency reforms:
+            //DeepTest: "HoHoHo" v "Ho"
+            {
+                f=new Frequencer();
+                f.setSpace("HoHoHo".getBytes());
+                System.out.println("SPACE:"+Arrays.toString(f.mySpace));
+                System.out.println("SPACE:"+new String(f.mySpace));
+                f.setTarget("Ho".getBytes());
+                int j=0, k=2;
+                System.out.println("TARGET.substr:"+new String(f.myTarget).substring(j, k));
+                int r;
+                for(r=0; r<f.mySpace.length; r++){
+                    int suffix_len=f.mySpace.length-f.suffixArray[r];
+                    int target_len=k-j;
+                    int comparableIndices=Integer.min(suffix_len, target_len);
+                    System.out.println("check in suffix::"+new String(f.mySpace).substring(f.suffixArray[r]));
+                    System.out.println("r"+r+"\ts_len"+suffix_len+"\tt_len"+target_len+"\tcompble"+comparableIndices);
+                    int n;
+                    boolean aborted=false;
+                    for(n=0; n<comparableIndices; n++){
+                        int strcmp=f.mySpace[f.suffixArray[r]+n]-f.myTarget[j+n];//strcmp(SPACE[i], TARGET[j])={match:0 inorder:NEG reversed:POS}
+                        System.out.println("\tn="+n+": strcmp="+strcmp);
+                        if(strcmp!=0){
+                            System.out.println(Integer.signum(strcmp));
+                            aborted=true;
+                            break;
+                        }
+                    }
+                    //reaching here means: (!aborted):==:deepmatch
+                    if(!aborted){
+                        System.out.print("deepmatch&...");
+                        if(target_len<=suffix_len)//shortTARGET deepmatched longerSUFFIX
+                            System.out.println("0 cuz SUFFIX.startsWith(TARGET)"+
+                                    (new String(f.mySpace).substring(f.suffixArray[r]).startsWith(new String(f.myTarget).substring(j,k)))+
+                                    "::expectsTRUE");// true=SPACE[i(=sA[r])~end].startsWith(TARGET[j~k])
+                        else//SUFFIX_i is shorter than TARGET_jk, so they are in order(-1);
+                            //comparableIndices == suffix_len < target_len ; but also SPACE[i(=sA[r])~end]==TARGET[j:(j+suffix_len)<k]
+                            //therefore true=TARGET[j~k].startsWith(SPACE[i~end])
+                            System.out.println("-1 cuz long TARGET cannot be starting_substring of SUFFIX: "+
+                                    new String(f.mySpace).substring(f.suffixArray[r])+"(!contains)"+
+                                    new String(f.myTarget).substring(j, k)+
+                                    "  "+
+                                    (new String(f.mySpace).substring(f.suffixArray[r]).contains(new String(f.myTarget).substring(j,k)))+
+                                    "::expectsFALSE");
+                    }
+                    System.out.println("____ & implementation said: "+f.targetCompareRanked(r, j, k));
+                }
+                System.out.println("So, in summary, with:");
+                f.printSuffixArray();
+                System.out.println(new String(f.mySpace)+":"+new String(f.myTarget)+"["+j+","+k+")");
+                System.out.println("matches in ranks ["+f.subByteStartIndex(j, k)+"~"+f.subByteEndIndex(j, k)+")");
+                System.out.println();
+            }
+            //DeepTest: "XYZXXYAYZX" v "XY"
+            {
+                f=new Frequencer();
+                f.setSpace("XYZXXYAYZX".getBytes());
+                System.out.println("SPACE:"+Arrays.toString(f.mySpace));
+                System.out.println("SPACE:"+new String(f.mySpace));
+                f.setTarget("aXYasd".getBytes());
+                int j=1, k=3;
+                System.out.println("TARGET.substr:"+new String(f.myTarget).substring(j, k));
+                int r;
+                for(r=0; r<f.mySpace.length; r++){
+                    int suffix_len=f.mySpace.length-f.suffixArray[r];
+                    int target_len=k-j;
+                    int comparableIndices=Integer.min(suffix_len, target_len);
+                    System.out.println("check in suffix::"+new String(f.mySpace).substring(f.suffixArray[r]));
+                    System.out.println("r"+r+"\ts_len"+suffix_len+"\tt_len"+target_len+"\tcompble"+comparableIndices);
+                    int n;
+                    boolean aborted=false;
+                    for(n=0; n<comparableIndices; n++){
+                        int strcmp=f.mySpace[f.suffixArray[r]+n]-f.myTarget[j+n];//strcmp(SPACE[i], TARGET[j])={match:0 inorder:NEG reversed:POS}
+                        System.out.println("\tn="+n+": strcmp="+strcmp);
+                        if(strcmp!=0){
+                            System.out.println(Integer.signum(strcmp));
+                            aborted=true;
+                            break;
+                        }
+                    }
+                    //reaching here means: (!aborted):==:deepmatch
+                    if(!aborted){
+                        System.out.print("deepmatch&...");
+                        if(target_len<=suffix_len)//shortTARGET deepmatched longerSUFFIX
+                            System.out.println("0 cuz SUFFIX.startsWith(TARGET)"+
+                                    (new String(f.mySpace).substring(f.suffixArray[r]).startsWith(new String(f.myTarget).substring(j,k)))+
+                                    "::expectsTRUE");// true=SPACE[i(=sA[r])~end].startsWith(TARGET[j~k])
+                        else//SUFFIX_i is shorter than TARGET_jk, so they are in order(-1);
+                            //comparableIndices == suffix_len < target_len ; but also SPACE[i(=sA[r])~end]==TARGET[j:(j+suffix_len)<k]
+                            //therefore true=TARGET[j~k].startsWith(SPACE[i~end])
+                            System.out.println("-1 cuz long TARGET cannot be starting_substring of SUFFIX: "+
+                                    new String(f.mySpace).substring(f.suffixArray[r])+"(!contains)"+
+                                    new String(f.myTarget).substring(j, k)+
+                                    "  "+
+                                    (new String(f.mySpace).substring(f.suffixArray[r]).contains(new String(f.myTarget).substring(j,k)))+
+                                    "::expectsFALSE");
+                    }
+                    System.out.println("____ & implementation said: "+f.targetCompareRanked(r, j, k));
+                }
+                System.out.println("So, in summary, with:");
+                f.printSuffixArray();
+                System.out.println(new String(f.mySpace)+":"+new String(f.myTarget)+"["+j+","+k+")");
+                System.out.println("matches in ranks ["+f.subByteStartIndex(j, k)+"~"+f.subByteEndIndex(j, k)+")");
+                System.out.println();
+            }
+
+        }catch(Exception e){
             System.out.println("STOP");
         }
+        System.out.println("END");
     }
 }
