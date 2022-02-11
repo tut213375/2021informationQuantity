@@ -27,7 +27,7 @@ public class Frequencer implements FrequencerInterface{
     int[] suffixArray;
 
     static boolean debug=false;
-    static boolean shortcut=false;
+    static boolean shortcut=true;
 
     private void printSuffixArray(){
         if(spaceReady){
@@ -414,10 +414,11 @@ if(debug)System.out.println("ended forloop, all latter ranks start with tse ... 
                 System.out.println("SPACE:"+Arrays.toString(f.mySpace));
                 f.setTarget("CA".getBytes());
                 f.printSuffixArray();
-                int r=2;
-                System.out.println(new String(f.mySpace).substring(f.suffixArray[r])+".beginsWith("+")?    true=0 else=strcmp()");
-                System.out.println("ret1:"+f.targetCompare(f.suffixArray[r], 0, f.myTarget.length));
-                System.out.println("ret2:"+f.targetCompareRanked(r, 0, f.myTarget.length));
+                for(int r=0; r<f.mySpace.length; r++){
+                    System.out.println(new String(f.mySpace).substring(f.suffixArray[r])+".beginsWith("+new String(f.myTarget)+")?    true=0 else=strcmp()");
+                    System.out.println("\ttargetCompare      :"+f.targetCompare(f.suffixArray[r], 0, f.myTarget.length));
+                    System.out.println("\ttargetCompareRanked:"+f.targetCompareRanked(r, 0, f.myTarget.length));
+                }
                 System.out.println();
             }
             //Test: "HHH"
