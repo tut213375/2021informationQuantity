@@ -28,6 +28,7 @@ public class Frequencer implements FrequencerInterface{
 
     static boolean debug=false;
     static boolean shortcut=true;
+    static boolean binSearch=false;
 
     private void printSuffixArray(){
         if(spaceReady){
@@ -120,7 +121,7 @@ public class Frequencer implements FrequencerInterface{
     }
     // 変更してはいけないコードはここまで。
 
-    private int targetCompare(int i, int j, int k)/*OGJ? testable notTested*//*1 caveat assumption*/{
+    private int targetCompare(int i, int j, int k)/*OGJ*//*Tested*//*1 caveat assumption*/{
         /*  suffix_i = SPACE.substring(i)
                 i.e. the substring of SPACE starting at index i
                 e.g. SPACE "Hamburger" | i=3 -> "burger"
@@ -230,6 +231,7 @@ public class Frequencer implements FrequencerInterface{
             also that "Ho" DOES NOT FOLLOW "Ho_" because the former is shorter and the
             proper sorted BYTE-Lexicographic order is {...,Hn,...,Ho,Ho_,Ho__,...,Hoa,...}.
         */
+        if(binSearch) return binSubByteStartIndex(start,end, 0, suffixArray.length);
         if(shortcut){//no strings instanced ; linear search
             for(int r=0; r<suffixArray.length; r++)
                 if(targetCompareRanked(r,start,end)>=0) return r; //how heavy is the overhead of targetCompare?? can this be improved??
@@ -319,6 +321,7 @@ if(debug)System.out.println("...compared all; ret r_min= len= "+suffixArray.leng
          * is a count of the distinct instances of the substring TARGET.substr(start,end) in
          * the main string SPACE.
          * */
+        if(binSearch) return binSubByteEndIndex(start,end, 0, suffixArray.length);
         if(shortcut){//no strings instanced ; linear search
             for(int r=0; r<suffixArray.length; r++)
                 if(targetCompareRanked(r,start,end)>0) return r; //how heavy is the overhead of targetCompare?? can this be improved??
@@ -367,6 +370,76 @@ if(debug)System.out.println("ended forloop, all latter ranks start with tse ... 
                 meaning count==(SPACE.length - subByteStartIndex(...)) */
     }
 
+    private int binSubByteStartIndex(int start, int end, int leftBound, int rightBound){//find first targCompRank(r)>=0 (NON-NEGATIVE)
+        //System.out.print("![["+leftBound+"|"+rightBound+"]]nonneg? \t");
+        if(leftBound==rightBound || leftBound+1==rightBound){
+            boolean leftNonNeg = (targetCompareRanked(leftBound, start,end)>=0);
+            int firstNonNeg = (leftNonNeg)? leftBound : leftBound+1;
+            //System.out.println("~~~finally: "+firstNonNeg);
+            return firstNonNeg;
+        }
+
+        int pivot=(leftBound) + (rightBound-leftBound)/2; //r
+        int cmpAtPivot=targetCompareRanked(pivot,start,end);
+/*
+        String spsuf = new String(mySpace).substring(suffixArray[pivot]);
+        String tasub = new String(myTarget).substring(start,end);
+        System.out.print("@"+leftBound+"+("+rightBound+"-"+leftBound+")/2="+pivot+":eval: "+cmpAtPivot);
+        boolean prefixed = spsuf.startsWith(tasub);
+        System.out.print(" \t=expects= "+  (prefixed? 0 : spsuf.compareTo(tasub))  );
+        System.out.print(" cuz "+(prefixed?
+                        ("("+spsuf+").startsWith("+tasub+")")
+                        :
+                        ("=("+spsuf+").compareTo("+tasub+")")
+                ));
+        System.out.print("\n\t\t");
+ */
+        if(!(cmpAtPivot>=0)){//threshold(first NON-NEG) on right
+            int newLeft = pivot;
+            //System.out.println("goRite-> : [["+newLeft+"|"+rightBound+"]]");
+            return binSubByteStartIndex(start, end, newLeft, rightBound);
+        }
+        else{//threshold(first NON-NEG) on left
+            int newRite = pivot;
+            //System.out.println("<-goLeft : [["+leftBound+"|"+newRite+"]]");
+            return binSubByteStartIndex(start, end, leftBound, newRite);
+        }
+    }
+    private int binSubByteEndIndex(int start, int end, int leftBound, int rightBound){//find first targCompRank(r)>0 (STRICT-POSITIVE)
+        //System.out.print("![["+leftBound+"|"+rightBound+"]]pos? \t");
+        if(leftBound==rightBound || leftBound+1==rightBound){
+            boolean leftPositive = (targetCompareRanked(leftBound, start,end)>0);
+            int firstPositive = (leftPositive)? leftBound : leftBound+1;
+            //System.out.println("~~~finally: "+firstPositive);
+            return firstPositive;
+        }
+
+        int pivot=(leftBound) + (rightBound-leftBound)/2; //r
+        int cmpAtPivot=targetCompareRanked(pivot,start,end);
+/*
+        String spsuf = new String(mySpace).substring(suffixArray[pivot]);
+        String tasub = new String(myTarget).substring(start,end);
+        System.out.print("@"+leftBound+"+("+rightBound+"-"+leftBound+")/2="+pivot+":eval: "+cmpAtPivot);
+        boolean prefixed = spsuf.startsWith(tasub);
+        System.out.print(" \t=expects= "+  (prefixed? 0 : spsuf.compareTo(tasub))  );
+        System.out.print(" cuz "+(prefixed?
+                ("("+spsuf+").startsWith("+tasub+")")
+                :
+                ("=("+spsuf+").compareTo("+tasub+")")
+        ));
+        System.out.print("\n\t\t");
+ */
+        if(!(cmpAtPivot>0)){//threshold(first POSITIVE) on right
+            int newLeft = pivot;
+            //System.out.println("goRite-> : [["+newLeft+"|"+rightBound+"]]");
+            return binSubByteEndIndex(start, end, newLeft, rightBound);
+        }
+        else{//threshold(first POSITIVE) on left
+            int newRite = pivot;
+            //System.out.println("<-goLeft : [["+leftBound+"|"+newRite+"]]");
+            return binSubByteEndIndex(start, end, leftBound, newRite);
+        }
+    }
 
     // Suffix Arrayを使ったプログラムのホワイトテストは、
     // privateなメソッドとフィールドをアクセスすることが必要なので、
