@@ -28,7 +28,7 @@ public class Frequencer implements FrequencerInterface{
 
     static boolean debug=false;
     static boolean shortcut=true;
-    static boolean binSearch=false;
+    static boolean binSearch=true;
 
     private void printSuffixArray(){
         if(spaceReady){
